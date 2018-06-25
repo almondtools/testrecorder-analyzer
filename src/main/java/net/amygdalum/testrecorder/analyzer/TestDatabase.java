@@ -3,14 +3,17 @@ package net.amygdalum.testrecorder.analyzer;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collector;
+import java.util.stream.Stream;
 
 import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
 
 import net.amygdalum.testrecorder.ContextSnapshot;
+import net.amygdalum.testrecorder.analyzer.query.TestCaseQuery;
+import net.amygdalum.testrecorder.analyzer.query.TestCaseUpdate;
 
 public class TestDatabase implements AutoCloseable {
 
@@ -70,10 +73,26 @@ public class TestDatabase implements AutoCloseable {
 		}
 	}
 
-	public List<TestCase> selectDistinct(Equivalence equivalence) {
-		return tests.values().stream()
-			.map(testcase -> deserialize(testcase))
-			.collect(new EquivalenceCollector(equivalence));
+	public void update(TestCaseUpdate update) {
+		Stream<TestCase> stream = tests.values().stream()
+			.map(testcase -> deserialize(testcase));
+		for (UpdateProcess process : update.updates()) {
+			stream.forEach(testCase -> {
+				try {
+					process.process(testCase);
+				} catch (TaskSkippedException e) {
+				}
+			});
+		}
+	}
+
+	public Stream<TestCase> fetch(TestCaseQuery query) {
+		Stream<TestCase> stream = tests.values().stream()
+			.map(testcase -> deserialize(testcase));
+		for (Collector<TestCase, ?, Stream<TestCase>> collector : query.collectors()) {
+			stream = stream.collect(collector);
+		}
+		return stream;
 	}
 
 	@Override

@@ -1,6 +1,11 @@
-package net.amygdalum.testrecorder.analyzer;
+package net.amygdalum.testrecorder.analyzer.query;
 
 import java.util.Optional;
+
+import net.amygdalum.testrecorder.analyzer.ComputeCoverage;
+import net.amygdalum.testrecorder.analyzer.Coverage;
+import net.amygdalum.testrecorder.analyzer.Equivalence;
+import net.amygdalum.testrecorder.analyzer.TestCase;
 
 public class CoverageEquivalence implements Equivalence {
 	@Override
@@ -19,4 +24,9 @@ public class CoverageEquivalence implements Equivalence {
 		}
 		return false;
 	}
+
+	public static EquivalenceCollector distinctCoverage() {
+		return new EquivalenceCollector(new CoverageEquivalence());
+	}
+
 }

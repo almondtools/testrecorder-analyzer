@@ -4,7 +4,6 @@ import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.joining;
 import static net.amygdalum.testrecorder.util.Types.baseType;
 
-import java.util.List;
 import java.util.Set;
 
 import org.jacoco.core.analysis.Analyzer;
@@ -30,7 +29,7 @@ import net.amygdalum.testrecorder.util.Instantiations;
 import net.amygdalum.testrecorder.util.WorkSet;
 import net.amygdalum.testrecorder.values.SerializedObject;
 
-public class ComputeCoverage implements Task {
+public class ComputeCoverage implements UpdateProcess {
 
 	private static final Logger LOG = LoggerFactory.getLogger(ComputeCoverage.class);
 
@@ -43,13 +42,8 @@ public class ComputeCoverage implements Task {
 	}
 
 	@Override
-	public List<Property<?>> requiredProperties() {
-		return asList(sourceCode);
-	}
-
-	@Override
 	public void process(TestCase testCase) throws TaskSkippedException {
-		SourceCode sourceCode = this.sourceCode.from(testCase).orElseThrow(Task::skip);
+		SourceCode sourceCode = this.sourceCode.from(testCase).orElseThrow(UpdateProcess::skip);
 
 		try {
 			IRuntime runtime = new LoggerRuntime();
@@ -96,15 +90,15 @@ public class ComputeCoverage implements Task {
 			COVERAGE.set(coverage).on(testCase);
 		} catch (ClassNotFoundException e) {
 			LOG.warn("computing coverage failed with class resolution: " + e.getMessage());
-			throw Task.skip(e);
+			throw UpdateProcess.skip(e);
 		} catch (DynamicClassCompilerException e) {
 			System.out.println(sourceCode.getCode());
 			LOG.warn("computing coverage failed with compilation: " + e.getMessage() + e.getDetailMessages().stream()
 				.collect(joining("\n", "\n", "")));
-			throw Task.skip(e);
+			throw UpdateProcess.skip(e);
 		} catch (Exception e) {
 			LOG.warn("computing coverage failed with coverage computation: " + e.getMessage(), e);
-			throw Task.skip(e);
+			throw UpdateProcess.skip(e);
 		}
 	}
 

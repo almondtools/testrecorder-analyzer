@@ -1,8 +1,6 @@
 package net.amygdalum.testrecorder.analyzer;
 
-import java.util.List;
-
-public interface Task {
+public interface UpdateProcess {
 
 	static TaskSkippedException skip() {
 		return new TaskSkippedException();
@@ -12,8 +10,6 @@ public interface Task {
 		return new TaskSkippedException(cause);
 	}
 
-	List<Property<?>> requiredProperties();
-	
 	void process(TestCase testCase) throws TaskSkippedException;
 
 }

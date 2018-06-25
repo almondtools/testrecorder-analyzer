@@ -12,7 +12,6 @@ import net.amygdalum.testrecorder.values.SerializedList;
 import net.amygdalum.testrecorder.values.SerializedLiteral;
 import net.amygdalum.testrecorder.values.SerializedMap;
 import net.amygdalum.testrecorder.values.SerializedObject;
-import net.amygdalum.testrecorder.values.SerializedPlaceholder;
 import net.amygdalum.testrecorder.values.SerializedSet;
 
 public class SerializedValueWalker {
@@ -94,13 +93,6 @@ public class SerializedValueWalker {
 			return function.apply(((SerializedObject) current));
 		}
 		throw new SerializedValueWalkerException("called forObject on " + current.getClass().getSimpleName());
-	}
-
-	public <T> T forPlaceHolder(Function<SerializedPlaceholder, T> function) {
-		if (current instanceof SerializedPlaceholder) {
-			return function.apply(((SerializedPlaceholder) current));
-		}
-		throw new SerializedValueWalkerException("called forPlaceholder on " + current.getClass().getSimpleName());
 	}
 
 	public <T> T forLiteral(Function<SerializedLiteral, T> function) {

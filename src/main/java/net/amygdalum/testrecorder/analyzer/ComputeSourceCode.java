@@ -1,6 +1,5 @@
 package net.amygdalum.testrecorder.analyzer;
 
-import static java.util.Collections.emptyList;
 import static net.amygdalum.testrecorder.util.Types.baseType;
 
 import java.util.List;
@@ -12,7 +11,7 @@ import net.amygdalum.testrecorder.runtime.TestRecorderAgentInitializer;
 import net.amygdalum.testrecorder.types.Computation;
 import net.amygdalum.testrecorder.types.Deserializer;
 
-public class ComputeSourceCode implements Task {
+public class ComputeSourceCode implements UpdateProcess {
 
 	public static final Property<SourceCode> SOURCE = new Property<>(ComputeSourceCode.class, "source", SourceCode.class);
 
@@ -26,11 +25,6 @@ public class ComputeSourceCode implements Task {
 		this.initializers = initializers;
 	}
 	
-	@Override
-	public List<Property<?>> requiredProperties() {
-		return emptyList();
-	}
-
 	@Override
 	public void process(TestCase testCase) {
 		try {

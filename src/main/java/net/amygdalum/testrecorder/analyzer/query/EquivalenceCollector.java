@@ -1,11 +1,9 @@
-package net.amygdalum.testrecorder.analyzer;
+package net.amygdalum.testrecorder.analyzer.query;
 
-import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
@@ -14,8 +12,13 @@ import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
+import java.util.stream.Stream;
+import java.util.stream.Stream.Builder;
 
-public class EquivalenceCollector implements Collector<TestCase, Map<Integer, Queue<TestCase>>, List<TestCase>> {
+import net.amygdalum.testrecorder.analyzer.Equivalence;
+import net.amygdalum.testrecorder.analyzer.TestCase;
+
+public class EquivalenceCollector implements Collector<TestCase, Map<Integer, Queue<TestCase>>, Stream<TestCase>> {
 
 	private Equivalence equivalence;
 
@@ -51,9 +54,9 @@ public class EquivalenceCollector implements Collector<TestCase, Map<Integer, Qu
 	}
 
 	@Override
-	public Function<Map<Integer, Queue<TestCase>>, List<TestCase>> finisher() {
+	public Function<Map<Integer, Queue<TestCase>>, Stream<TestCase>> finisher() {
 		return accumulator -> {
-			List<TestCase> result = new ArrayList<>();
+			Builder<TestCase> result = Stream.builder();
 			for (Map.Entry<Integer, Queue<TestCase>> entry : accumulator.entrySet()) {
 				Queue<TestCase> values = entry.getValue();
 				while (!values.isEmpty()) {
@@ -68,7 +71,7 @@ public class EquivalenceCollector implements Collector<TestCase, Map<Integer, Qu
 					}
 				}
 			}
-			return result;
+			return result.build();
 		};
 	}
 

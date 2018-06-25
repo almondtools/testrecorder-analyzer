@@ -1,54 +1,41 @@
 package net.amygdalum.testrecorder.analyzer;
 
+import static net.amygdalum.testrecorder.analyzer.TestAgentConfiguration.defaultConfig;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.lang.reflect.Method;
 import java.util.List;
-import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import net.amygdalum.testrecorder.ConfigurableSerializerFacade;
 import net.amygdalum.testrecorder.ContextSnapshot;
-import net.amygdalum.testrecorder.DefaultSerializationProfile;
-import net.amygdalum.testrecorder.MethodSignature;
-import net.amygdalum.testrecorder.analyzer.ComputeCoverage;
-import net.amygdalum.testrecorder.analyzer.ComputeSourceCode;
-import net.amygdalum.testrecorder.analyzer.Coverage;
-import net.amygdalum.testrecorder.analyzer.Task;
-import net.amygdalum.testrecorder.analyzer.Tasks;
-import net.amygdalum.testrecorder.analyzer.TestCase;
+import net.amygdalum.testrecorder.callsiterecorder.CallsiteRecorder;
 import net.amygdalum.testrecorder.deserializers.Adaptors;
 import net.amygdalum.testrecorder.deserializers.builder.SetupGenerator;
 import net.amygdalum.testrecorder.deserializers.builder.SetupGenerators;
 import net.amygdalum.testrecorder.deserializers.matcher.MatcherGenerator;
 import net.amygdalum.testrecorder.deserializers.matcher.MatcherGenerators;
 import net.amygdalum.testrecorder.profile.AgentConfiguration;
-import net.amygdalum.testrecorder.profile.SerializationProfile;
 import net.amygdalum.testrecorder.runtime.TestRecorderAgentInitializer;
-import net.amygdalum.testrecorder.types.SerializedValue;
-import net.amygdalum.testrecorder.types.SerializerSession;
 import net.amygdalum.testrecorder.util.testobjects.TestTarget;
 
 public class ComputeCoverageTest {
 
 	private AgentConfiguration config;
-	private ConfigurableSerializerFacade facade;
-	private SerializerSession session;
 
 	@BeforeEach
 	void before() throws Exception {
-		config = new AgentConfiguration(getClass().getClassLoader())
-			.withDefaultValue(SerializationProfile.class, DefaultSerializationProfile::new);
-		facade = new ConfigurableSerializerFacade(config);
-		session = facade.newSession();
+		config = defaultConfig();
+		;
 	}
 
 	@Test
 	void testPrime() throws Exception {
-		ContextSnapshot snapPrime = createTestTargetSnapshot(new TestTarget(), true, Integer.valueOf(7));
+		ContextSnapshot snapPrime = createTestTargetSnapshot(new TestTarget(), Integer.valueOf(7));
 		TestCase testPrime = new TestCase(snapPrime);
-		coverage().process(testPrime);
+		coverage(config).process(testPrime);
 
 		assertThat(ComputeCoverage.COVERAGE.from(testPrime)).hasValueSatisfying(coverage -> {
 			assertThat(coverage.getMethods()).hasSize(3);
@@ -61,18 +48,18 @@ public class ComputeCoverageTest {
 		});
 	}
 
-	private Task coverage() {
+	private UpdateProcess coverage(AgentConfiguration config) {
 		SetupGenerators setup = new SetupGenerators(new Adaptors<SetupGenerators>(config).load(SetupGenerator.class));
 		MatcherGenerators matcher = new MatcherGenerators(new Adaptors<MatcherGenerators>(config).load(MatcherGenerator.class));
 		List<TestRecorderAgentInitializer> initializers = config.loadConfigurations(TestRecorderAgentInitializer.class);
-		return Tasks.of(new ComputeSourceCode(setup, matcher, initializers), new ComputeCoverage());
+		return UpdateProcesses.of(new ComputeSourceCode(setup, matcher, initializers), new ComputeCoverage());
 	}
 
 	@Test
 	void testNotPrime() throws Exception {
-		ContextSnapshot snapNotPrime = createTestTargetSnapshot(new TestTarget(), false, Integer.valueOf(4));
+		ContextSnapshot snapNotPrime = createTestTargetSnapshot(new TestTarget(), Integer.valueOf(4));
 		TestCase testNotPrime = new TestCase(snapNotPrime);
-		coverage().process(testNotPrime);
+		coverage(config).process(testNotPrime);
 
 		assertThat(ComputeCoverage.COVERAGE.from(testNotPrime)).hasValueSatisfying(coverage -> {
 			assertThat(coverage.getMethods()).hasSize(3);
@@ -87,13 +74,13 @@ public class ComputeCoverageTest {
 
 	@Test
 	void testEquals() throws Exception {
-		ContextSnapshot snap5 = createTestTargetSnapshot(new TestTarget(), false, Integer.valueOf(5));
+		ContextSnapshot snap5 = createTestTargetSnapshot(new TestTarget(), Integer.valueOf(5));
 		TestCase test5 = new TestCase(snap5);
-		coverage().process(test5);
+		coverage(config).process(test5);
 
-		ContextSnapshot snap7 = createTestTargetSnapshot(new TestTarget(), false, Integer.valueOf(7));
+		ContextSnapshot snap7 = createTestTargetSnapshot(new TestTarget(), Integer.valueOf(7));
 		TestCase test7 = new TestCase(snap7);
-		coverage().process(test7);
+		coverage(config).process(test7);
 
 		Coverage coverage5 = ComputeCoverage.COVERAGE.from(test5).orElseThrow(RuntimeException::new);
 		Coverage coverage7 = ComputeCoverage.COVERAGE.from(test7).orElseThrow(RuntimeException::new);
@@ -102,17 +89,17 @@ public class ComputeCoverageTest {
 
 	@Test
 	void testNotEquals() throws Exception {
-		ContextSnapshot snap4 = createTestTargetSnapshot(new TestTarget(), false, Integer.valueOf(4));
+		ContextSnapshot snap4 = createTestTargetSnapshot(new TestTarget(), Integer.valueOf(4));
 		TestCase test4 = new TestCase(snap4);
-		coverage().process(test4);
+		coverage(config).process(test4);
 
-		ContextSnapshot snap2 = createTestTargetSnapshot(new TestTarget(), false, Integer.valueOf(2));
+		ContextSnapshot snap2 = createTestTargetSnapshot(new TestTarget(), Integer.valueOf(2));
 		TestCase test2 = new TestCase(snap2);
-		coverage().process(test2);
+		coverage(config).process(test2);
 
-		ContextSnapshot snap5 = createTestTargetSnapshot(new TestTarget(), false, Integer.valueOf(5));
+		ContextSnapshot snap5 = createTestTargetSnapshot(new TestTarget(), Integer.valueOf(5));
 		TestCase test5 = new TestCase(snap5);
-		coverage().process(test5);
+		coverage(config).process(test5);
 
 		Coverage coverage4 = ComputeCoverage.COVERAGE.from(test4).orElseThrow(RuntimeException::new);
 		Coverage coverage2 = ComputeCoverage.COVERAGE.from(test2).orElseThrow(RuntimeException::new);
@@ -122,24 +109,21 @@ public class ComputeCoverageTest {
 		assertThat(coverage4).withFailMessage("instruction coverage should be different").isNotEqualTo(coverage5);
 	}
 
-	private ContextSnapshot createTestTargetSnapshot(TestTarget thisObject, boolean resultObject, Integer argObject) {
-		ContextSnapshot snap = new ContextSnapshot(0, "id" + UUID.randomUUID(),
-			MethodSignature.fromDescriptor(TestTarget.class.getName().replace('.', '/'), "test", "(Ljava/lang/Integer;)Z"));
-
-		SerializedValue serializedThisObject = facade.serialize(TestTarget.class, thisObject, session);
-		SerializedValue serializedArgObject = facade.serialize(Integer.class, argObject, session);
-		SerializedValue serializedResultObject = facade.serialize(boolean.class, resultObject, session);
-
-		snap.setSetupThis(serializedThisObject);
-		snap.setSetupArgs(serializedArgObject);
-		snap.setSetupGlobals();
-
-		snap.setExpectThis(serializedThisObject);
-		snap.setExpectArgs(serializedArgObject);
-		snap.setExpectGlobals();
-		snap.setExpectResult(serializedResultObject);
-
-		return snap;
+	private ContextSnapshot createTestTargetSnapshot(TestTarget thisObject, Integer argObject) throws Exception {
+		try (CallsiteRecorder recorder = new CallsiteRecorder(method(TestTarget.class, "test", Integer.class))) {
+			CompletableFuture<List<ContextSnapshot>> recordings = recorder
+				.record(() -> {
+					thisObject.test(argObject);
+				});
+			return recordings.join().get(0);
+		}
 	}
 
+	private Method method(Class<?> clazz, String name, Class<?>... argtypes) {
+		try {
+			return clazz.getDeclaredMethod(name, argtypes);
+		} catch (ReflectiveOperationException e) {
+			throw new RuntimeException(e);
+		}
+	}
 }

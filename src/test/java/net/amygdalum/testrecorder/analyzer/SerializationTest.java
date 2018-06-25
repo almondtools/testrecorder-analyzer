@@ -1,5 +1,6 @@
 package net.amygdalum.testrecorder.analyzer;
 
+import static java.util.Arrays.asList;
 import static net.amygdalum.testrecorder.util.Types.parameterized;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -22,8 +23,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import net.amygdalum.testrecorder.ConfigurableSerializerFacade;
-import net.amygdalum.testrecorder.analyzer.Serialization;
+import net.amygdalum.testrecorder.DefaultSerializerSession;
 import net.amygdalum.testrecorder.profile.AgentConfiguration;
+import net.amygdalum.testrecorder.profile.Classes;
 import net.amygdalum.testrecorder.serializers.SerializerFacade;
 import net.amygdalum.testrecorder.types.SerializedValue;
 import net.amygdalum.testrecorder.types.SerializerSession;
@@ -37,7 +39,6 @@ import net.amygdalum.testrecorder.values.SerializedLiteral;
 import net.amygdalum.testrecorder.values.SerializedMap;
 import net.amygdalum.testrecorder.values.SerializedNull;
 import net.amygdalum.testrecorder.values.SerializedObject;
-import net.amygdalum.testrecorder.values.SerializedPlaceholder;
 import net.amygdalum.testrecorder.values.SerializedProxy;
 import net.amygdalum.testrecorder.values.SerializedSet;
 
@@ -118,16 +119,18 @@ public class SerializationTest {
 
 	@Test
 	void testSerializedNullOfTypeString() throws Exception {
-		SerializedNull nullValue = SerializedNull.nullInstance(String.class);
+		SerializedNull nullValue = SerializedNull.nullInstance();
+		nullValue.useAs(String.class);
 
-		assertThat(serializationRoundTrip(nullValue).getType()).isEqualTo(String.class);
+		assertThat(serializationRoundTrip(nullValue).getUsedTypes()).contains(String.class);
 	}
 
 	@Test
 	void testSerializedNullOfTypeObject() throws Exception {
-		SerializedNull nullValue = SerializedNull.nullInstance(Object.class);
+		SerializedNull nullValue = SerializedNull.nullInstance();
+		nullValue.useAs(Object.class);
 
-		assertThat(serializationRoundTrip(nullValue).getType()).isEqualTo(Object.class);
+		assertThat(serializationRoundTrip(nullValue).getUsedTypes()).contains(Object.class);
 	}
 
 	@Test
@@ -396,10 +399,10 @@ public class SerializationTest {
 	void testSerializedPlaceholder() throws Exception {
 		Simple simple = new Simple(2);
 		Nested nested = new Nested(3, simple);
-		SerializedPlaceholder value = serializePlaceholder(nested, SerializedPlaceholder.class);
+		SerializedObject value = serializePlaceholder(nested, SerializedObject.class);
 
-		SerializedPlaceholder object = serializationRoundTrip(value);
-		assertThat(new SerializedValueWalker(object).forPlaceHolder(SerializedPlaceholder::getType)).isEqualTo(Nested.class);
+		SerializedObject object = serializationRoundTrip(value);
+		assertThat(new SerializedValueWalker(object).forObject(SerializedObject::getType)).isEqualTo(Nested.class);
 	}
 
 	private <T extends SerializedValue> T serialize(Object value, Class<T> clazz) {
@@ -411,7 +414,8 @@ public class SerializationTest {
 	}
 
 	private <T extends SerializedValue> T serializePlaceholder(Object value, Class<T> clazz) {
-		return clazz.cast(facade.serializePlaceholder(value.getClass(), value, session));
+		return clazz.cast(facade.serialize(value.getClass(), value, new DefaultSerializerSession()
+			.withClassFacades(asList(Classes.byDescription(clazz)))));
 	}
 
 	@SuppressWarnings("unchecked")
