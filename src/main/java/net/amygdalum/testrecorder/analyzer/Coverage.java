@@ -24,6 +24,12 @@ public class Coverage implements Serializable {
 		return methods;
 	}
 
+	public Optional<MethodCoverage> getMethod(String name) {
+		return methods.stream()
+			.filter(method -> method.getName().equals(name))
+			.findFirst();
+	}
+
 	public void addMethodCoverage(MethodCoverage coverage) {
 		methods.add(coverage);
 	}

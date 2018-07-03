@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public class MethodCoverage implements Serializable {
 
@@ -18,16 +19,32 @@ public class MethodCoverage implements Serializable {
 		this.lines = new ArrayList<>();
 	}
 
+	public String getName() {
+		return name;
+	}
+
 	public void setInstructionCoverage(int total, int covered) {
 		instructions = new Counter(total, covered);
+	}
+
+	public Counter getInstructionCoverage() {
+		return instructions;
 	}
 
 	public void setBranchCoverage(int total, int covered) {
 		branches = new Counter(total, covered);
 	}
+	
+	public Counter getBranchCoverage() {
+		return branches;
+	}
 
 	public void setComplexityCoverage(int total, int covered) {
 		complexity = new Counter(total, covered);
+	}
+	
+	public Counter getComplexityCoverage() {
+		return complexity;
 	}
 
 	public void addLine(LineCoverage coverage) {
@@ -36,6 +53,12 @@ public class MethodCoverage implements Serializable {
 
 	public List<LineCoverage> getLines() {
 		return lines;
+	}
+
+	public Optional<LineCoverage> getLine(int lineNo) {
+		return lines.stream()
+			.filter(line -> line.getLine() == lineNo)
+			.findFirst();
 	}
 
 	@Override

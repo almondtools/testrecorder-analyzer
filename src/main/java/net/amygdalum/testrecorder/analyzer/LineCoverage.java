@@ -20,9 +20,17 @@ public class LineCoverage implements Serializable {
 	public void setInstructionCoverage(int total, int covered) {
 		instruction = new Counter(total, covered);
 	}
+	
+	public Counter getInstructionCoverage() {
+		return instruction;
+	}
 
 	public void setBranchCoverage(int total, int covered) {
 		branch = new Counter(total, covered);
+	}
+	
+	public Counter getBranchCoverage() {
+		return branch;
 	}
 
 	public boolean isCovered() {

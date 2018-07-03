@@ -16,15 +16,23 @@ public class Counter implements Serializable {
 	public int getTotal() {
 		return total;
 	}
-	
+
 	public int getCovered() {
 		return covered;
+	}
+
+	public float ratio() {
+		return (float) covered / (float) total;
 	}
 
 	public boolean isCovered() {
 		return total == covered;
 	}
-	
+
+	public boolean isUncovered() {
+		return total == 0;
+	}
+
 	@Override
 	public int hashCode() {
 		return total
@@ -45,6 +53,11 @@ public class Counter implements Serializable {
 		Counter that = (Counter) obj;
 		return this.total == that.total
 			&& this.covered == that.covered;
+	}
+
+	@Override
+	public String toString() {
+		return String.format("%d/%d", covered, total);
 	}
 
 }

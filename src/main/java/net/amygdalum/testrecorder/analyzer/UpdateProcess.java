@@ -1,15 +1,13 @@
 package net.amygdalum.testrecorder.analyzer;
 
+import static net.amygdalum.testrecorder.analyzer.UpdateProcessChain.chain;
+
 public interface UpdateProcess {
 
-	static TaskSkippedException skip() {
-		return new TaskSkippedException();
-	}
-	
-	static TaskSkippedException skip(Throwable cause) {
-		return new TaskSkippedException(cause);
-	}
+	void process(TestCase testCase) throws TaskFailedException;
 
-	void process(TestCase testCase) throws TaskSkippedException;
+	public default UpdateProcess then(UpdateProcess next) {
+		return chain(this, next);
+	}
 
 }

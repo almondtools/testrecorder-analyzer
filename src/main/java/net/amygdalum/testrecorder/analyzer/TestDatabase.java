@@ -80,7 +80,7 @@ public class TestDatabase implements AutoCloseable {
 			stream.forEach(testCase -> {
 				try {
 					process.process(testCase);
-				} catch (TaskSkippedException e) {
+				} catch (TaskFailedException e) {
 				}
 			});
 		}

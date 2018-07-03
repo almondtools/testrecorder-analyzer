@@ -42,8 +42,8 @@ public class ComputeCoverage implements UpdateProcess {
 	}
 
 	@Override
-	public void process(TestCase testCase) throws TaskSkippedException {
-		SourceCode sourceCode = this.sourceCode.from(testCase).orElseThrow(UpdateProcess::skip);
+	public void process(TestCase testCase) throws TaskFailedException {
+		SourceCode sourceCode = this.sourceCode.from(testCase).orElseThrow(TaskFailedException::new);
 
 		try {
 			IRuntime runtime = new LoggerRuntime();
@@ -90,15 +90,15 @@ public class ComputeCoverage implements UpdateProcess {
 			COVERAGE.set(coverage).on(testCase);
 		} catch (ClassNotFoundException e) {
 			LOG.warn("computing coverage failed with class resolution: " + e.getMessage());
-			throw UpdateProcess.skip(e);
+			throw new TaskFailedException(e);
 		} catch (DynamicClassCompilerException e) {
 			System.out.println(sourceCode.getCode());
 			LOG.warn("computing coverage failed with compilation: " + e.getMessage() + e.getDetailMessages().stream()
 				.collect(joining("\n", "\n", "")));
-			throw UpdateProcess.skip(e);
+			throw new TaskFailedException(e);
 		} catch (Exception e) {
 			LOG.warn("computing coverage failed with coverage computation: " + e.getMessage(), e);
-			throw UpdateProcess.skip(e);
+			throw new TaskFailedException(e);
 		}
 	}
 

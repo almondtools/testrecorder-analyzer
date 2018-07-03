@@ -26,7 +26,7 @@ public class ComputeSourceCode implements UpdateProcess {
 	}
 	
 	@Override
-	public void process(TestCase testCase) {
+	public void process(TestCase testCase) throws TaskFailedException {
 		try {
 			ContextSnapshot snapshot = testCase.getSnapshot();
 
@@ -44,7 +44,7 @@ public class ComputeSourceCode implements UpdateProcess {
 
 			SOURCE.set(new SourceCode(pkg + '.' + name, sourceCode)).on(testCase);
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			throw new TaskFailedException(e);
 		}
 
 	}
