@@ -11,7 +11,7 @@ import net.amygdalum.testrecorder.runtime.TestRecorderAgentInitializer;
 import net.amygdalum.testrecorder.types.Computation;
 import net.amygdalum.testrecorder.types.Deserializer;
 
-public class ComputeSourceCode implements UpdateProcess {
+public class ComputeSourceCode implements PropertyUpdate {
 
 	public static final Property<SourceCode> SOURCE = new Property<>(ComputeSourceCode.class, "source", SourceCode.class);
 
@@ -26,7 +26,7 @@ public class ComputeSourceCode implements UpdateProcess {
 	}
 	
 	@Override
-	public void process(TestCase testCase) throws TaskFailedException {
+	public boolean apply(TestCase testCase) {
 		try {
 			ContextSnapshot snapshot = testCase.getSnapshot();
 
@@ -42,7 +42,7 @@ public class ComputeSourceCode implements UpdateProcess {
 			classGenerator.generate(snapshot);
 			String sourceCode = classGenerator.render();
 
-			SOURCE.set(new SourceCode(pkg + '.' + name, sourceCode)).on(testCase);
+			return SOURCE.set(new SourceCode(pkg + '.' + name, sourceCode)).on(testCase);
 		} catch (Exception e) {
 			throw new TaskFailedException(e);
 		}

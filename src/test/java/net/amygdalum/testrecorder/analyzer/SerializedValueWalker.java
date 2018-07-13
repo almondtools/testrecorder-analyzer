@@ -1,105 +1,225 @@
 package net.amygdalum.testrecorder.analyzer;
 
+import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.joining;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
 import net.amygdalum.testrecorder.types.SerializedValue;
+import net.amygdalum.testrecorder.util.Exceptional;
 import net.amygdalum.testrecorder.values.SerializedArray;
 import net.amygdalum.testrecorder.values.SerializedField;
 import net.amygdalum.testrecorder.values.SerializedList;
 import net.amygdalum.testrecorder.values.SerializedLiteral;
 import net.amygdalum.testrecorder.values.SerializedMap;
+import net.amygdalum.testrecorder.values.SerializedNull;
 import net.amygdalum.testrecorder.values.SerializedObject;
 import net.amygdalum.testrecorder.values.SerializedSet;
 
 public class SerializedValueWalker {
 
 	private SerializedValue current;
+	private List<String> error;
+
+	private SerializedValueWalker(String... errors) {
+		this.error = asList(errors);
+	}
 
 	public SerializedValueWalker(SerializedValue current) {
 		this.current = current;
 	}
 
+	public static SerializedValueWalker start(SerializedValue[] array, int index) {
+		if (array == null || index >= array.length) {
+			return SerializedValueWalker.fail("no values to start from");
+		}
+		SerializedValue start = array[index];
+		if (start == null) {
+			return SerializedValueWalker.fail("null value to start from");
+		}
+		return new SerializedValueWalker(start);
+	}
+
+	public static SerializedValueWalker start(SerializedField[] array, int index) {
+		if (array == null || index >= array.length) {
+			return SerializedValueWalker.fail("no fields to start from");
+		}
+		SerializedField startField = array[index];
+		if (startField == null) {
+			return SerializedValueWalker.fail("null field to start from");
+		}
+		SerializedValue start = startField.getValue();
+		if (start == null) {
+			return SerializedValueWalker.fail("null value to start from");
+		}
+		return new SerializedValueWalker(start);
+	}
+
+	private static SerializedValueWalker fail(String... msg) {
+		return new SerializedValueWalker(msg);
+	}
+
+	private SerializedValueWalker error(String msg) {
+		if (error == null) {
+			error = new ArrayList<String>();
+			current = null;
+		}
+		error.add(msg);
+		return this;
+	}
+
+	public Entry errorEntry(String msg) {
+		if (error == null) {
+			error = new ArrayList<String>();
+			current = null;
+		}
+		error.add(msg);
+		return new Entry();
+	}
+
+	public SerializedValueWalkerException exception() {
+		return new SerializedValueWalkerException(error);
+	}
+
 	public SerializedValueWalker index(int i) {
-		if (current instanceof SerializedArray) {
-			current = ((SerializedArray) current).getArray()[i];
+		if (current == null) {
+			return error("called index(" + i + ") on null");
+		} else if (current instanceof SerializedArray) {
+			SerializedValue[] base = ((SerializedArray) current).getArray();
+			if (i >= base.length) {
+				return error("called index(" + i + ") on array of size " + base.length);
+			}
+			current = base[i];
 			return this;
 		}
-		throw new SerializedValueWalkerException("called index(" + i + ") on " + current.getClass().getSimpleName());
+		return error("called index(" + i + ") on " + currentName());
 	}
 
 	public SerializedValueWalker element(int i) {
-		if (current instanceof SerializedList) {
-			current = ((SerializedList) current).get(i);
+		if (current == null) {
+			return error("called element(" + i + ") on null");
+		} else if (current instanceof SerializedList) {
+			SerializedList base = (SerializedList) current;
+			if (i >= base.size()) {
+				return error("called element(" + i + ") on list of size " + base.size());
+			}
+			current = base.get(i);
 			return this;
 		}
-		throw new SerializedValueWalkerException("called element(" + i + ") on " + current.getClass().getSimpleName());
+		return error("called element(" + i + ") on " + currentName());
 	}
 
 	public SerializedValueWalker select(Predicate<SerializedValue> predicate) {
-		if (current instanceof SerializedSet) {
-			Optional<SerializedValue> selected = ((SerializedSet) current).stream()
+		if (current == null) {
+			return error("called select(<predicate>) on null");
+		} else if (current instanceof SerializedSet) {
+			SerializedSet base = (SerializedSet) current;
+			Optional<SerializedValue> selected = base.stream()
 				.filter(predicate)
 				.findFirst();
 			if (selected.isPresent()) {
 				current = selected.get();
 				return this;
+			} else {
+				return error("called select(<predicate>) on set of non-matching elements");
 			}
 		}
-		throw new SerializedValueWalkerException("called select(<predicate>) on " + current.getClass().getSimpleName());
+		return error("called select(<predicate>) on " + currentName());
 	}
 
 	public Entry entry(Predicate<SerializedValue> predicate) {
-		if (current instanceof SerializedMap) {
-			Optional<Map.Entry<SerializedValue, SerializedValue>> selected = ((SerializedMap) current).entrySet().stream()
+		if (current == null) {
+			return errorEntry("called entry(<predicate>) on null");
+		} else if (current instanceof SerializedMap) {
+			SerializedMap base = (SerializedMap) current;
+			Optional<Map.Entry<SerializedValue, SerializedValue>> selected = base.entrySet().stream()
 				.filter(entry -> predicate.test(entry.getKey()))
 				.findFirst();
 			if (selected.isPresent()) {
 				return new Entry(selected.get());
+			} else {
+				return errorEntry("called entry(<predicate>) on map of non-matching keys");
 			}
 		}
-		throw new SerializedValueWalkerException("called entry(<predicate>) on " + current.getClass().getSimpleName());
+		return errorEntry("called entry(<predicate>) on " + currentName());
 	}
 
 	public SerializedValueWalker field(String name) {
-		if (current instanceof SerializedObject) {
-			Optional<SerializedField> field = ((SerializedObject) current).getField(name);
+		if (current == null) {
+			return error("called field(" + name + ") on null");
+		} else if (current instanceof SerializedObject) {
+			SerializedObject base = (SerializedObject) current;
+			Optional<SerializedField> field = base.getField(name);
 			if (field.isPresent()) {
 				current = field.get().getValue();
 				return this;
+			} else {
+				return error("called field(" + name + ") on object with fields " + base.getFields().stream().map(SerializedField::getName).collect(joining(", ", "[", "]")));
 			}
 		}
-		throw new SerializedValueWalkerException("called field(" + name + ") on " + current.getClass().getSimpleName());
+		return error("called field(" + name + ") on " + currentName());
 	}
 
 	public SerializedValue current() {
 		return current;
 	}
 
-	public <T> T forField(String name, Function<SerializedField, T> function) {
-		if (current instanceof SerializedObject) {
+	public <T> Exceptional<T> forCurrent(Function<SerializedValue, T> func) {
+		if (error != null) {
+			return Exceptional.throwing(exception());
+		}
+		return Exceptional.success(func.apply(current));
+	}
+
+	public <T> Exceptional<T> forObject(Function<SerializedObject, T> function) {
+		if (error != null) {
+			return Exceptional.throwing(exception());
+		} else if (current instanceof SerializedObject) {
+			return Exceptional.success(function.apply(((SerializedObject) current)));
+		}
+		return Exceptional.throwing(error("called forObject on " + currentName()).exception());
+	}
+
+	public <T> Exceptional<T> forLiteral(Function<SerializedLiteral, T> function) {
+		if (error != null) {
+			return Exceptional.throwing(exception());
+		} else if (current instanceof SerializedLiteral) {
+			return Exceptional.success(function.apply(((SerializedLiteral) current)));
+		}
+		return Exceptional.throwing(error("called forLiteral on " + currentName()).exception());
+	}
+
+	public <T> Exceptional<T> forNull(Function<SerializedNull, T> function) {
+		if (error != null) {
+			return Exceptional.throwing(exception());
+		} else if (current instanceof SerializedNull) {
+			return Exceptional.success(function.apply(((SerializedNull) current)));
+		}
+		return Exceptional.throwing(error("called forLiteral on " + currentName()).exception());
+	}
+
+	public <T> Exceptional<T> forField(String name, Function<SerializedField, T> function) {
+		if (error != null) {
+			return Exceptional.throwing(exception());
+		} else if (current instanceof SerializedObject) {
 			Optional<SerializedField> field = ((SerializedObject) current).getField(name);
 			if (field.isPresent()) {
-				return function.apply(field.get());
+				return Exceptional.success(function.apply(field.get()));
 			}
 		}
-		throw new SerializedValueWalkerException("called forField on " + current.getClass().getSimpleName());
+		return Exceptional.throwing(error("called forField on " + currentName()).exception());
 	}
 
-	public <T> T forObject(Function<SerializedObject, T> function) {
-		if (current instanceof SerializedObject) {
-			return function.apply(((SerializedObject) current));
+	private String currentName() {
+		if (current == null) {
+			return "null";
 		}
-		throw new SerializedValueWalkerException("called forObject on " + current.getClass().getSimpleName());
-	}
-
-	public <T> T forLiteral(Function<SerializedLiteral, T> function) {
-		if (current instanceof SerializedLiteral) {
-			return function.apply(((SerializedLiteral) current));
-		}
-		throw new SerializedValueWalkerException("called forLiteral on " + current.getClass().getSimpleName());
+		return current.getClass().getSimpleName();
 	}
 
 	public class Entry {
@@ -110,6 +230,9 @@ public class SerializedValueWalker {
 		public Entry(Map.Entry<SerializedValue, SerializedValue> entry) {
 			this.key = entry.getKey();
 			this.value = entry.getValue();
+		}
+
+		public Entry() {
 		}
 
 		public SerializedValueWalker key() {

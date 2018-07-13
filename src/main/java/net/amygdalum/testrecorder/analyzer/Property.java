@@ -45,8 +45,8 @@ public class Property<T> {
 			this.value = value;
 		}
 
-		public void on(PropertyStore store) {
-			store.set(Property.this, value);
+		public boolean on(PropertyStore store) {
+			return store.set(Property.this, value);
 		}
 		
 	}

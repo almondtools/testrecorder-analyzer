@@ -194,7 +194,7 @@ public class SerializationTest {
 	}
 
 	@Test
-	void testSerializedObjectArray() throws Exception {
+	void testSerializedObjectArray() throws Throwable {
 		Simple simple = new Simple(2);
 		Nested nested = new Nested(3, simple);
 		Recursive recursive = new Recursive(4, new Recursive(5, null));
@@ -203,7 +203,7 @@ public class SerializationTest {
 
 		SerializedArray array = serializationRoundTrip(value);
 		assertThat(array.getArray()).hasSize(3);
-		assertThat(new SerializedValueWalker(array).index(0).field("field").forLiteral(SerializedLiteral::getValue)).isEqualTo(2);
+		assertThat(new SerializedValueWalker(array).index(0).field("field").forLiteral(SerializedLiteral::getValue).orFail()).isEqualTo(2);
 		assertThat(new SerializedValueWalker(array).index(0).field("field").current())
 			.isSameAs(new SerializedValueWalker(array).index(1).field("field").field("field").current());
 		assertThat(new SerializedValueWalker(array).index(2).current())
@@ -211,48 +211,48 @@ public class SerializationTest {
 	}
 
 	@Test
-	void testSerializedSimpleObject() throws Exception {
+	void testSerializedSimpleObject() throws Throwable {
 		Simple simple = new Simple(2);
 		SerializedObject value = serialize(simple, SerializedObject.class);
 
 		SerializedObject object = serializationRoundTrip(value);
-		assertThat(new SerializedValueWalker(object).forObject(SerializedObject::getFields)).hasSize(1);
-		assertThat(new SerializedValueWalker(object).forField("field", SerializedField::getType)).isEqualTo(int.class);
-		assertThat(new SerializedValueWalker(object).field("field").forLiteral(SerializedLiteral::getValue)).isEqualTo(2);
+		assertThat(new SerializedValueWalker(object).forObject(SerializedObject::getFields).orFail()).hasSize(1);
+		assertThat(new SerializedValueWalker(object).forField("field", SerializedField::getType).orFail()).isEqualTo(int.class);
+		assertThat(new SerializedValueWalker(object).field("field").forLiteral(SerializedLiteral::getValue).orFail()).isEqualTo(2);
 	}
 
 	@Test
-	void testSerializedNestedObject() throws Exception {
+	void testSerializedNestedObject() throws Throwable {
 		Simple simple = new Simple(2);
 		Nested nested = new Nested(3, simple);
 		SerializedObject value = serialize(nested, SerializedObject.class);
 
 		SerializedObject object = serializationRoundTrip(value);
-		assertThat(new SerializedValueWalker(object).forObject(SerializedObject::getFields)).hasSize(2);
-		assertThat(new SerializedValueWalker(object).forField("i", SerializedField::getType)).isEqualTo(int.class);
-		assertThat(new SerializedValueWalker(object).forField("field", SerializedField::getType)).isEqualTo(Simple.class);
-		assertThat(new SerializedValueWalker(object).field("i").forLiteral(SerializedLiteral::getValue)).isEqualTo(3);
-		assertThat(new SerializedValueWalker(object).field("field").field("field").forLiteral(SerializedLiteral::getValue)).isEqualTo(2);
+		assertThat(new SerializedValueWalker(object).forObject(SerializedObject::getFields).orFail()).hasSize(2);
+		assertThat(new SerializedValueWalker(object).forField("i", SerializedField::getType).orFail()).isEqualTo(int.class);
+		assertThat(new SerializedValueWalker(object).forField("field", SerializedField::getType).orFail()).isEqualTo(Simple.class);
+		assertThat(new SerializedValueWalker(object).field("i").forLiteral(SerializedLiteral::getValue).orFail()).isEqualTo(3);
+		assertThat(new SerializedValueWalker(object).field("field").field("field").forLiteral(SerializedLiteral::getValue).orFail()).isEqualTo(2);
 	}
 
 	@Test
-	void testSerializedRecursiveObject() throws Exception {
+	void testSerializedRecursiveObject() throws Throwable {
 		Recursive recursive = new Recursive(4, new Recursive(5, null));
 		recursive.field.field = recursive;
 		SerializedObject value = serialize(recursive, SerializedObject.class);
 
 		SerializedObject object = serializationRoundTrip(value);
-		assertThat(new SerializedValueWalker(object).forObject(SerializedObject::getFields)).hasSize(2);
-		assertThat(new SerializedValueWalker(object).forField("i", SerializedField::getType)).isEqualTo(int.class);
-		assertThat(new SerializedValueWalker(object).forField("field", SerializedField::getType)).isEqualTo(Recursive.class);
-		assertThat(new SerializedValueWalker(object).field("i").forLiteral(SerializedLiteral::getValue)).isEqualTo(4);
-		assertThat(new SerializedValueWalker(object).field("field").field("i").forLiteral(SerializedLiteral::getValue)).isEqualTo(5);
+		assertThat(new SerializedValueWalker(object).forObject(SerializedObject::getFields).orFail()).hasSize(2);
+		assertThat(new SerializedValueWalker(object).forField("i", SerializedField::getType).orFail()).isEqualTo(int.class);
+		assertThat(new SerializedValueWalker(object).forField("field", SerializedField::getType).orFail()).isEqualTo(Recursive.class);
+		assertThat(new SerializedValueWalker(object).field("i").forLiteral(SerializedLiteral::getValue).orFail()).isEqualTo(4);
+		assertThat(new SerializedValueWalker(object).field("field").field("i").forLiteral(SerializedLiteral::getValue).orFail()).isEqualTo(5);
 		assertThat(new SerializedValueWalker(object).field("field").field("field").current())
 			.isSameAs(new SerializedValueWalker(object).current());
 	}
 
 	@Test
-	void testSerializedList() throws Exception {
+	void testSerializedList() throws Throwable {
 		Simple simple = new Simple(2);
 		Nested nested = new Nested(3, simple);
 		Recursive recursive = new Recursive(4, new Recursive(5, null));
@@ -266,9 +266,9 @@ public class SerializationTest {
 		SerializedList value = serialize(val, SerializedList.class);
 
 		SerializedList list = serializationRoundTrip(value);
-		assertThat(new SerializedValueWalker(list).element(0).field("field").forLiteral(SerializedLiteral::getValue)).isEqualTo(2);
-		assertThat(new SerializedValueWalker(list).element(1).field("i").forLiteral(SerializedLiteral::getValue)).isEqualTo(4);
-		assertThat(new SerializedValueWalker(list).element(1).field("field").field("i").forLiteral(SerializedLiteral::getValue)).isEqualTo(5);
+		assertThat(new SerializedValueWalker(list).element(0).field("field").forLiteral(SerializedLiteral::getValue).orFail()).isEqualTo(2);
+		assertThat(new SerializedValueWalker(list).element(1).field("i").forLiteral(SerializedLiteral::getValue).orFail()).isEqualTo(4);
+		assertThat(new SerializedValueWalker(list).element(1).field("field").field("i").forLiteral(SerializedLiteral::getValue).orFail()).isEqualTo(5);
 		assertThat(new SerializedValueWalker(list).element(1).field("field").field("field").current())
 			.isSameAs(new SerializedValueWalker(list).element(1).current());
 		assertThat(new SerializedValueWalker(list).element(2).field("field").current())
@@ -276,7 +276,7 @@ public class SerializationTest {
 	}
 
 	@Test
-	void testSerializedGenericList() throws Exception {
+	void testSerializedGenericList() throws Throwable {
 		Simple simple = new Simple(2);
 		Nested nested = new Nested(3, simple);
 		Recursive recursive = new Recursive(4, new Recursive(5, null));
@@ -290,9 +290,9 @@ public class SerializationTest {
 		SerializedList value = serialize(parameterized(ArrayList.class, null, Object.class), val, SerializedList.class);
 
 		SerializedList list = serializationRoundTrip(value);
-		assertThat(new SerializedValueWalker(list).element(0).field("field").forLiteral(SerializedLiteral::getValue)).isEqualTo(2);
-		assertThat(new SerializedValueWalker(list).element(1).field("i").forLiteral(SerializedLiteral::getValue)).isEqualTo(4);
-		assertThat(new SerializedValueWalker(list).element(1).field("field").field("i").forLiteral(SerializedLiteral::getValue)).isEqualTo(5);
+		assertThat(new SerializedValueWalker(list).element(0).field("field").forLiteral(SerializedLiteral::getValue).orFail()).isEqualTo(2);
+		assertThat(new SerializedValueWalker(list).element(1).field("i").forLiteral(SerializedLiteral::getValue).orFail()).isEqualTo(4);
+		assertThat(new SerializedValueWalker(list).element(1).field("field").field("i").forLiteral(SerializedLiteral::getValue).orFail()).isEqualTo(5);
 		assertThat(new SerializedValueWalker(list).element(1).field("field").field("field").current())
 			.isSameAs(new SerializedValueWalker(list).element(1).current());
 		assertThat(new SerializedValueWalker(list).element(2).field("field").current())
@@ -300,7 +300,7 @@ public class SerializationTest {
 	}
 
 	@Test
-	void testSerializedSet() throws Exception {
+	void testSerializedSet() throws Throwable {
 		Simple simple = new Simple(2);
 		Nested nested = new Nested(3, simple);
 		Recursive recursive = new Recursive(4, new Recursive(5, null));
@@ -314,17 +314,17 @@ public class SerializationTest {
 		SerializedSet value = serialize(val, SerializedSet.class);
 
 		SerializedSet set = serializationRoundTrip(value);
-		assertThat(new SerializedValueWalker(set).select(ofType(Simple.class)).field("field").forLiteral(SerializedLiteral::getValue)).isEqualTo(2);
+		assertThat(new SerializedValueWalker(set).select(ofType(Simple.class)).field("field").forLiteral(SerializedLiteral::getValue).orFail()).isEqualTo(2);
 		assertThat(new SerializedValueWalker(set).select(ofType(Nested.class)).field("field").current())
 			.isSameAs(new SerializedValueWalker(set).select(ofType(Simple.class)).current());
-		assertThat(new SerializedValueWalker(set).select(ofType(Recursive.class)).field("i").forLiteral(SerializedLiteral::getValue)).isEqualTo(4);
-		assertThat(new SerializedValueWalker(set).select(ofType(Recursive.class)).field("field").field("i").forLiteral(SerializedLiteral::getValue)).isEqualTo(5);
+		assertThat(new SerializedValueWalker(set).select(ofType(Recursive.class)).field("i").forLiteral(SerializedLiteral::getValue).orFail()).isEqualTo(4);
+		assertThat(new SerializedValueWalker(set).select(ofType(Recursive.class)).field("field").field("i").forLiteral(SerializedLiteral::getValue).orFail()).isEqualTo(5);
 		assertThat(new SerializedValueWalker(set).select(ofType(Recursive.class)).field("field").field("field").current())
 			.isSameAs(new SerializedValueWalker(set).select(ofType(Recursive.class)).current());
 	}
 
 	@Test
-	void testSerializedGenericSet() throws Exception {
+	void testSerializedGenericSet() throws Throwable {
 		Simple simple = new Simple(2);
 		Nested nested = new Nested(3, simple);
 		Recursive recursive = new Recursive(4, new Recursive(5, null));
@@ -338,17 +338,17 @@ public class SerializationTest {
 		SerializedSet value = serialize(parameterized(HashSet.class, null, Object.class), val, SerializedSet.class);
 
 		SerializedSet set = serializationRoundTrip(value);
-		assertThat(new SerializedValueWalker(set).select(ofType(Simple.class)).field("field").forLiteral(SerializedLiteral::getValue)).isEqualTo(2);
+		assertThat(new SerializedValueWalker(set).select(ofType(Simple.class)).field("field").forLiteral(SerializedLiteral::getValue).orFail()).isEqualTo(2);
 		assertThat(new SerializedValueWalker(set).select(ofType(Nested.class)).field("field").current())
 			.isSameAs(new SerializedValueWalker(set).select(ofType(Simple.class)).current());
-		assertThat(new SerializedValueWalker(set).select(ofType(Recursive.class)).field("i").forLiteral(SerializedLiteral::getValue)).isEqualTo(4);
-		assertThat(new SerializedValueWalker(set).select(ofType(Recursive.class)).field("field").field("i").forLiteral(SerializedLiteral::getValue)).isEqualTo(5);
+		assertThat(new SerializedValueWalker(set).select(ofType(Recursive.class)).field("i").forLiteral(SerializedLiteral::getValue).orFail()).isEqualTo(4);
+		assertThat(new SerializedValueWalker(set).select(ofType(Recursive.class)).field("field").field("i").forLiteral(SerializedLiteral::getValue).orFail()).isEqualTo(5);
 		assertThat(new SerializedValueWalker(set).select(ofType(Recursive.class)).field("field").field("field").current())
 			.isSameAs(new SerializedValueWalker(set).select(ofType(Recursive.class)).current());
 	}
 
 	@Test
-	void testSerializedMap() throws Exception {
+	void testSerializedMap() throws Throwable {
 		String label = "label";
 		Simple simple = new Simple(2);
 		Nested nested = new Nested(3, simple);
@@ -362,17 +362,17 @@ public class SerializationTest {
 		SerializedMap value = serialize(val, SerializedMap.class);
 
 		SerializedMap map = serializationRoundTrip(value);
-		assertThat(new SerializedValueWalker(map).entry(ofType(Simple.class)).key().field("field").forLiteral(SerializedLiteral::getValue)).isEqualTo(2);
+		assertThat(new SerializedValueWalker(map).entry(ofType(Simple.class)).key().field("field").forLiteral(SerializedLiteral::getValue).orFail()).isEqualTo(2);
 		assertThat(new SerializedValueWalker(map).entry(ofType(Simple.class)).value().field("field").current())
 			.isSameAs(new SerializedValueWalker(map).entry(ofType(Simple.class)).key().current());
-		assertThat(new SerializedValueWalker(map).entry(ofType(String.class)).value().field("i").forLiteral(SerializedLiteral::getValue)).isEqualTo(4);
-		assertThat(new SerializedValueWalker(map).entry(ofType(String.class)).value().field("field").field("i").forLiteral(SerializedLiteral::getValue)).isEqualTo(5);
+		assertThat(new SerializedValueWalker(map).entry(ofType(String.class)).value().field("i").forLiteral(SerializedLiteral::getValue).orFail()).isEqualTo(4);
+		assertThat(new SerializedValueWalker(map).entry(ofType(String.class)).value().field("field").field("i").forLiteral(SerializedLiteral::getValue).orFail()).isEqualTo(5);
 		assertThat(new SerializedValueWalker(map).entry(ofType(String.class)).value().field("field").field("field").current())
 			.isSameAs(new SerializedValueWalker(map).entry(ofType(String.class)).value().current());
 	}
 
 	@Test
-	void testSerializedGenericMap() throws Exception {
+	void testSerializedGenericMap() throws Throwable {
 		String label = "label";
 		Simple simple = new Simple(2);
 		Nested nested = new Nested(3, simple);
@@ -386,23 +386,23 @@ public class SerializationTest {
 		SerializedMap value = serialize(parameterized(HashMap.class, null, Object.class, Object.class), val, SerializedMap.class);
 
 		SerializedMap map = serializationRoundTrip(value);
-		assertThat(new SerializedValueWalker(map).entry(ofType(Simple.class)).key().field("field").forLiteral(SerializedLiteral::getValue)).isEqualTo(2);
+		assertThat(new SerializedValueWalker(map).entry(ofType(Simple.class)).key().field("field").forLiteral(SerializedLiteral::getValue).orFail()).isEqualTo(2);
 		assertThat(new SerializedValueWalker(map).entry(ofType(Simple.class)).value().field("field").current())
 			.isSameAs(new SerializedValueWalker(map).entry(ofType(Simple.class)).key().current());
-		assertThat(new SerializedValueWalker(map).entry(ofType(String.class)).value().field("i").forLiteral(SerializedLiteral::getValue)).isEqualTo(4);
-		assertThat(new SerializedValueWalker(map).entry(ofType(String.class)).value().field("field").field("i").forLiteral(SerializedLiteral::getValue)).isEqualTo(5);
+		assertThat(new SerializedValueWalker(map).entry(ofType(String.class)).value().field("i").forLiteral(SerializedLiteral::getValue).orFail()).isEqualTo(4);
+		assertThat(new SerializedValueWalker(map).entry(ofType(String.class)).value().field("field").field("i").forLiteral(SerializedLiteral::getValue).orFail()).isEqualTo(5);
 		assertThat(new SerializedValueWalker(map).entry(ofType(String.class)).value().field("field").field("field").current())
 			.isSameAs(new SerializedValueWalker(map).entry(ofType(String.class)).value().current());
 	}
 
 	@Test
-	void testSerializedPlaceholder() throws Exception {
+	void testSerializedPlaceholder() throws Throwable {
 		Simple simple = new Simple(2);
 		Nested nested = new Nested(3, simple);
 		SerializedObject value = serializePlaceholder(nested, SerializedObject.class);
 
 		SerializedObject object = serializationRoundTrip(value);
-		assertThat(new SerializedValueWalker(object).forObject(SerializedObject::getType)).isEqualTo(Nested.class);
+		assertThat(new SerializedValueWalker(object).forObject(SerializedObject::getType).orFail()).isEqualTo(Nested.class);
 	}
 
 	private <T extends SerializedValue> T serialize(Object value, Class<T> clazz) {

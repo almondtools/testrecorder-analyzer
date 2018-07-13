@@ -1,35 +1,37 @@
 package net.amygdalum.testrecorder.analyzer;
 
-import java.util.HashMap;
+import static java.util.Collections.emptyMap;
+
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 
 import net.amygdalum.testrecorder.ContextSnapshot;
 
 public class TestCase implements PropertyStore {
 
+	private String id; 
 	private ContextSnapshot snapshot;
 	private Map<String, Object> properties;
 
-	public TestCase() {
-		this.properties = new HashMap<>();
+	public TestCase(String id, ContextSnapshot snapshot, Map<String, Object> properties) {
+		this.id = id;
+		this.snapshot = snapshot;
+		this.properties = new LinkedHashMap<>(properties);
 	}
 	
 	public TestCase(ContextSnapshot snapshot) {
-		this.snapshot = snapshot;
-		this.properties = new HashMap<>();
+		this(UUID.randomUUID().toString(), snapshot, emptyMap());
 	}
 	
-	public void setSnapshot(ContextSnapshot snapshot) {
-		this.snapshot = snapshot;
+	public String getId() {
+		return id;
 	}
-
+	
 	public ContextSnapshot getSnapshot() {
 		return snapshot;
-	}
-	
-	public void setProperties(Map<String, Object> properties) {
-		this.properties = properties;
 	}
 	
 	public Map<String, Object> getProperties() {
@@ -43,9 +45,11 @@ public class TestCase implements PropertyStore {
 	}
 
 	@Override
-	public <T> void set(Property<T> property, T value) {
+	public <T> boolean set(Property<T> property, T value) {
 		String key = property.getKey();
-		properties.put(key, value);
+		
+		Object oldValue = properties.put(key, value);
+		return !Objects.equals(oldValue, value);
 	}
 
 }

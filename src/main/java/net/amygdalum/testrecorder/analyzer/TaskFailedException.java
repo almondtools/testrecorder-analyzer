@@ -1,6 +1,6 @@
 package net.amygdalum.testrecorder.analyzer;
 
-public class TaskFailedException extends Exception {
+public class TaskFailedException extends RuntimeException {
 
 	public TaskFailedException() {
 	}

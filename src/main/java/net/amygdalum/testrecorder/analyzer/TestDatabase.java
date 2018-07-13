@@ -3,8 +3,10 @@ package net.amygdalum.testrecorder.analyzer;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Predicate;
 import java.util.stream.Collector;
 import java.util.stream.Stream;
 
@@ -28,21 +30,19 @@ public class TestDatabase implements AutoCloseable {
 	}
 
 	public String store(TestCase testCase) {
-		String id = UUID.randomUUID().toString();
+		String id = testCase.getId();
 		tests.put(id, serialize(testCase));
 		store.commit();
 		return id;
 	}
 
 	public TestCase load(String id) {
-		return deserialize(tests.get(id));
+		return deserialize(id, tests.get(id));
 	}
 
 	private boolean isPluggableType(Object value) {
 		Class<? extends Object> clazz = value.getClass();
 		if (clazz == Byte.class) {
-			return true;
-		} else if (clazz == Short.class) {
 			return true;
 		} else if (clazz == Short.class) {
 			return true;
@@ -74,21 +74,33 @@ public class TestDatabase implements AutoCloseable {
 	}
 
 	public void update(TestCaseUpdate update) {
-		Stream<TestCase> stream = tests.values().stream()
-			.map(testcase -> deserialize(testcase));
-		for (UpdateProcess process : update.updates()) {
+		try {
+			Stream<TestCase> stream = tests.entrySet().stream()
+				.map(entry -> deserialize(entry.getKey(), entry.getValue()));
+			for (Predicate<TestCase> selector : update.selectors()) {
+				stream = stream.filter(selector);
+			}
 			stream.forEach(testCase -> {
-				try {
-					process.process(testCase);
-				} catch (TaskFailedException e) {
+				boolean changed = false;
+				for (PropertyUpdate process : update.updates()) {
+					changed |= process.apply(testCase);
+				}
+				if (changed) {
+					tests.put(testCase.getId(), serialize(testCase));
 				}
 			});
+			store.commit();
+		} catch (TaskFailedException e) {
+			store.rollback();
 		}
 	}
 
 	public Stream<TestCase> fetch(TestCaseQuery query) {
-		Stream<TestCase> stream = tests.values().stream()
-			.map(testcase -> deserialize(testcase));
+		Stream<TestCase> stream = tests.entrySet().stream()
+			.map(entry -> deserialize(entry.getKey(), entry.getValue()));
+		for (Predicate<TestCase> selector : query.selectors()) {
+			stream = stream.filter(selector);
+		}
 		for (Collector<TestCase, ?, Stream<TestCase>> collector : query.collectors()) {
 			stream = stream.collect(collector);
 		}
@@ -110,10 +122,10 @@ public class TestDatabase implements AutoCloseable {
 	private Object[][] serialize(TestCase testCase) {
 		Map<String, Object> properties = testCase.getProperties();
 		ContextSnapshot snapshot = testCase.getSnapshot();
-		
+
 		Object[][] keyvalues = new Object[properties.size() + 1][];
 		keyvalues[0] = keyvalue("snapshot", serialization.serialize(snapshot));
-		
+
 		int index = 1;
 		for (Map.Entry<String, Object> property : properties.entrySet()) {
 			String key = property.getKey();
@@ -127,27 +139,28 @@ public class TestDatabase implements AutoCloseable {
 		return keyvalues;
 	}
 
-	private TestCase deserialize(Object[][] keyvalues) {
-		TestCase testCase = new TestCase();
-		Map<String, Object> properties = testCase.getProperties();
-		
-		for (Object[] keyvalue : keyvalues) { 
+	private TestCase deserialize(String id, Object[][] keyvalues) {
+		ContextSnapshot snapshot = null;
+		Map<String, Object> properties = new HashMap<>();
+
+		for (Object[] keyvalue : keyvalues) {
 			String key = (String) keyvalue[0];
 			Object value = keyvalue[1];
 			if (value instanceof byte[]) {
 				value = serialization.deserialize((byte[]) value);
 			}
 			if (key.equals("snapshot") && value instanceof ContextSnapshot) {
-				testCase.setSnapshot((ContextSnapshot) value);
+				snapshot = (ContextSnapshot) value;
 			} else {
 				properties.put(key, value);
 			}
 		}
-		return testCase;
+
+		return new TestCase(id, snapshot, properties);
 	}
 
 	private Object[] keyvalue(String key, Object value) {
-		return new Object[] {key, value};
+		return new Object[] { key, value };
 	}
-
+	
 }

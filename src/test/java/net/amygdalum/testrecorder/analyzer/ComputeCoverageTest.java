@@ -1,5 +1,6 @@
 package net.amygdalum.testrecorder.analyzer;
 
+import static net.amygdalum.testrecorder.analyzer.Snapshots.recordTest;
 import static net.amygdalum.testrecorder.analyzer.TestAgentConfiguration.defaultConfig;
 import static net.amygdalum.testrecorder.util.testobjects.In.in;
 import static net.amygdalum.testrecorder.util.testobjects.Odd.odd;
@@ -7,13 +8,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import net.amygdalum.testrecorder.ContextSnapshot;
-import net.amygdalum.testrecorder.callsiterecorder.CallsiteRecorder;
 import net.amygdalum.testrecorder.deserializers.Adaptors;
 import net.amygdalum.testrecorder.deserializers.builder.SetupGenerator;
 import net.amygdalum.testrecorder.deserializers.builder.SetupGenerators;
@@ -21,8 +20,6 @@ import net.amygdalum.testrecorder.deserializers.matcher.MatcherGenerator;
 import net.amygdalum.testrecorder.deserializers.matcher.MatcherGenerators;
 import net.amygdalum.testrecorder.profile.AgentConfiguration;
 import net.amygdalum.testrecorder.runtime.TestRecorderAgentInitializer;
-import net.amygdalum.testrecorder.util.testobjects.In;
-import net.amygdalum.testrecorder.util.testobjects.Odd;
 
 public class ComputeCoverageTest {
 
@@ -35,10 +32,10 @@ public class ComputeCoverageTest {
 
 	@Test
 	void testOdd() throws Exception {
-		ContextSnapshot oddSlice = createSnapshot(odd(), Integer.valueOf(7));
+		ContextSnapshot oddSlice = recordTest(odd(), Integer.valueOf(7));
 		TestCase oddTest = new TestCase(oddSlice);
 
-		coverage(config).process(oddTest);
+		coverage(config).apply(oddTest);
 
 		assertThat(ComputeCoverage.COVERAGE.from(oddTest)).hasValueSatisfying(coverage -> {
 			assertThat(coverage.getMethods()).hasSize(4);
@@ -53,10 +50,10 @@ public class ComputeCoverageTest {
 
 	@Test
 	void testEven() throws Exception {
-		ContextSnapshot evenSlice = createSnapshot(odd(), Integer.valueOf(4));
+		ContextSnapshot evenSlice = recordTest(odd(), Integer.valueOf(4));
 		TestCase evenTest = new TestCase(evenSlice);
 
-		coverage(config).process(evenTest);
+		coverage(config).apply(evenTest);
 
 		assertThat(ComputeCoverage.COVERAGE.from(evenTest)).hasValueSatisfying(coverage -> {
 			assertThat(coverage.getMethods()).hasSize(4);
@@ -71,15 +68,15 @@ public class ComputeCoverageTest {
 
 	@Test
 	void testEqualCoverageSlices() throws Exception {
-		ContextSnapshot oddSlice = createSnapshot(odd(), Integer.valueOf(5));
+		ContextSnapshot oddSlice = recordTest(odd(), Integer.valueOf(5));
 		TestCase oddTest = new TestCase(oddSlice);
 
-		coverage(config).process(oddTest);
+		coverage(config).apply(oddTest);
 
-		ContextSnapshot otherOddSlice = createSnapshot(odd(), Integer.valueOf(7));
+		ContextSnapshot otherOddSlice = recordTest(odd(), Integer.valueOf(7));
 		TestCase otherOddTest = new TestCase(otherOddSlice);
 
-		coverage(config).process(otherOddTest);
+		coverage(config).apply(otherOddTest);
 
 		Coverage oddCoverage = ComputeCoverage.COVERAGE.from(oddTest).orElseThrow(RuntimeException::new);
 		Coverage otherOddCoverage = ComputeCoverage.COVERAGE.from(otherOddTest).orElseThrow(RuntimeException::new);
@@ -88,15 +85,15 @@ public class ComputeCoverageTest {
 
 	@Test
 	void testDifferentCoverageSlice() throws Exception {
-		ContextSnapshot evenSlice = createSnapshot(odd(), Integer.valueOf(4));
+		ContextSnapshot evenSlice = recordTest(odd(), Integer.valueOf(4));
 		TestCase evenTest = new TestCase(evenSlice);
 
-		coverage(config).process(evenTest);
+		coverage(config).apply(evenTest);
 
-		ContextSnapshot oddSlice = createSnapshot(odd(), Integer.valueOf(5));
+		ContextSnapshot oddSlice = recordTest(odd(), Integer.valueOf(5));
 		TestCase oddTest = new TestCase(oddSlice);
 
-		coverage(config).process(oddTest);
+		coverage(config).apply(oddTest);
 
 		Coverage evenCoverage = ComputeCoverage.COVERAGE.from(evenTest).orElseThrow(RuntimeException::new);
 		Coverage oddCoverage = ComputeCoverage.COVERAGE.from(oddTest).orElseThrow(RuntimeException::new);
@@ -120,15 +117,15 @@ public class ComputeCoverageTest {
 
 	@Test
 	void testDifferentBranchCoverageSlice() throws Exception {
-		ContextSnapshot firstElementSlice = createSnapshot(in(42, 43), Integer.valueOf(42));
+		ContextSnapshot firstElementSlice = recordTest(in(42, 43), Integer.valueOf(42));
 		TestCase firstElementTest = new TestCase(firstElementSlice);
 
-		coverage(config).process(firstElementTest);
+		coverage(config).apply(firstElementTest);
 
-		ContextSnapshot secondElementSlice = createSnapshot(in(42, 43), Integer.valueOf(43));
+		ContextSnapshot secondElementSlice = recordTest(in(42, 43), Integer.valueOf(43));
 		TestCase secondElementTest = new TestCase(secondElementSlice);
 
-		coverage(config).process(secondElementTest);
+		coverage(config).apply(secondElementTest);
 
 		Coverage firstElementCoverage = ComputeCoverage.COVERAGE.from(firstElementTest).orElseThrow(RuntimeException::new);
 		Coverage secondElementCoverage = ComputeCoverage.COVERAGE.from(secondElementTest).orElseThrow(RuntimeException::new);
@@ -144,32 +141,11 @@ public class ComputeCoverageTest {
 		});
 	}
 
-	private UpdateProcess coverage(AgentConfiguration config) {
+	private PropertyUpdates coverage(AgentConfiguration config) {
 		SetupGenerators setup = new SetupGenerators(new Adaptors<SetupGenerators>(config).load(SetupGenerator.class));
 		MatcherGenerators matcher = new MatcherGenerators(new Adaptors<MatcherGenerators>(config).load(MatcherGenerator.class));
 		List<TestRecorderAgentInitializer> initializers = config.loadConfigurations(TestRecorderAgentInitializer.class);
-		return new ComputeSourceCode(setup, matcher, initializers).then(new ComputeCoverage()); 
+		return PropertyUpdates.inSequence(new ComputeSourceCode(setup, matcher, initializers), new ComputeCoverage()); 
 	}
 
-	private ContextSnapshot createSnapshot(Odd thisObject, Integer argObject) throws Exception {
-		Class<?>[] argtypes = { Integer.class };
-		try (CallsiteRecorder recorder = new CallsiteRecorder(Odd.class.getDeclaredMethod("test", argtypes))) {
-			CompletableFuture<List<ContextSnapshot>> recordings = recorder
-				.record(() -> {
-					thisObject.test(argObject);
-				});
-			return recordings.join().get(0);
-		}
-	}
-
-	private ContextSnapshot createSnapshot(In thisObject, Integer argObject) throws Exception {
-		Class<?>[] argtypes = { Integer.class };
-		try (CallsiteRecorder recorder = new CallsiteRecorder(In.class.getDeclaredMethod("test", argtypes))) {
-			CompletableFuture<List<ContextSnapshot>> recordings = recorder
-				.record(() -> {
-					thisObject.test(argObject);
-				});
-			return recordings.join().get(0);
-		}
-	}
 }

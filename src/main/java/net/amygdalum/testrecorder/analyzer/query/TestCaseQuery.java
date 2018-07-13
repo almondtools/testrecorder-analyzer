@@ -22,7 +22,13 @@ public class TestCaseQuery {
 		return new TestCaseQuery();
 	}
 
-	public TestCaseQuery selecting(Predicate<TestCase> selector) {
+	public static TestCaseQuery query(Predicate<TestCase> selector) {
+		TestCaseQuery testCaseQuery = new TestCaseQuery();
+		testCaseQuery.selectors.add(selector);
+		return testCaseQuery;
+	}
+
+	public TestCaseQuery and(Predicate<TestCase> selector) {
 		selectors.add(selector);
 		return this;
 	}

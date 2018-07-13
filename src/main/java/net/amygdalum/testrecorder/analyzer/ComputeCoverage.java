@@ -1,6 +1,5 @@
 package net.amygdalum.testrecorder.analyzer;
 
-import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.joining;
 import static net.amygdalum.testrecorder.util.Types.baseType;
 
@@ -29,7 +28,7 @@ import net.amygdalum.testrecorder.util.Instantiations;
 import net.amygdalum.testrecorder.util.WorkSet;
 import net.amygdalum.testrecorder.values.SerializedObject;
 
-public class ComputeCoverage implements UpdateProcess {
+public class ComputeCoverage implements PropertyUpdate {
 
 	private static final Logger LOG = LoggerFactory.getLogger(ComputeCoverage.class);
 
@@ -42,7 +41,7 @@ public class ComputeCoverage implements UpdateProcess {
 	}
 
 	@Override
-	public void process(TestCase testCase) throws TaskFailedException {
+	public boolean apply(TestCase testCase) {
 		SourceCode sourceCode = this.sourceCode.from(testCase).orElseThrow(TaskFailedException::new);
 
 		try {
@@ -87,12 +86,11 @@ public class ComputeCoverage implements UpdateProcess {
 				}
 			}
 
-			COVERAGE.set(coverage).on(testCase);
+			return COVERAGE.set(coverage).on(testCase);
 		} catch (ClassNotFoundException e) {
 			LOG.warn("computing coverage failed with class resolution: " + e.getMessage());
 			throw new TaskFailedException(e);
 		} catch (DynamicClassCompilerException e) {
-			System.out.println(sourceCode.getCode());
 			LOG.warn("computing coverage failed with compilation: " + e.getMessage() + e.getDetailMessages().stream()
 				.collect(joining("\n", "\n", "")));
 			throw new TaskFailedException(e);
@@ -124,10 +122,11 @@ public class ComputeCoverage implements UpdateProcess {
 
 	private Set<SerializedValue> collectValues(ContextSnapshot snapshot) {
 		WorkSet<SerializedValue> values = new WorkSet<>();
-		values.add(snapshot.getSetupThis());
-		values.addAll(asList(snapshot.getSetupArgs()));
-		values.add(snapshot.getExpectThis());
-		values.addAll(asList(snapshot.getExpectArgs()));
+		snapshot.onSetupThis().ifPresent(values::add);
+		snapshot.streamSetupArgs().forEach(values::add);
+		snapshot.onExpectThis().ifPresent(values::add);
+		snapshot.streamExpectArgs().forEach(values::add);
+		
 		while (!values.isEmpty()) {
 			SerializedValue current = values.remove();
 			values.addAll(current.referencedValues());
