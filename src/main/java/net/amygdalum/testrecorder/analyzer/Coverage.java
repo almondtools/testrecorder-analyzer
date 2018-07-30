@@ -1,5 +1,7 @@
 package net.amygdalum.testrecorder.analyzer;
 
+import static java.util.stream.Collectors.joining;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,14 +26,15 @@ public class Coverage implements Serializable {
 		return methods;
 	}
 
-	public Optional<MethodCoverage> getMethod(String name) {
+	public Optional<MethodCoverage> getMethodCoverage(String name) {
 		return methods.stream()
 			.filter(method -> method.getName().equals(name))
 			.findFirst();
 	}
 
-	public void addMethodCoverage(MethodCoverage coverage) {
+	public Coverage addMethodCoverage(MethodCoverage coverage) {
 		methods.add(coverage);
+		return this;
 	}
 
 	public Optional<LineCoverage> getLineCoverage(int line) {
@@ -40,7 +43,15 @@ public class Coverage implements Serializable {
 			.filter(l -> l.getLine() == line)
 			.findFirst();
 	}
-
+	
+	@Override
+	public String toString() {
+		return methods.stream()
+			.map(MethodCoverage::toString)
+			.collect(joining("\n\t", "{\n\t","\n}"))
+			+ (success ? ":success" : ":failed");
+	}
+	
 	@Override
 	public int hashCode() {
 		return (success ? 1 : 0)

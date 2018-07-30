@@ -101,22 +101,22 @@ public class ComputeCoverage implements PropertyUpdate {
 	}
 
 	private MethodCoverage convertCoverage(String className, IMethodCoverage mc) {
-		MethodCoverage coverage = new MethodCoverage(methodNameOf(mc.getName(), mc.getDesc()));
-		coverage.setInstructionCoverage(mc.getInstructionCounter().getTotalCount(), mc.getInstructionCounter().getCoveredCount());
-		coverage.setBranchCoverage(mc.getBranchCounter().getTotalCount(), mc.getBranchCounter().getCoveredCount());
-		coverage.setComplexityCoverage(mc.getComplexityCounter().getTotalCount(), mc.getComplexityCounter().getCoveredCount());
+		MethodCoverage coverage = new MethodCoverage(methodNameOf(mc.getName(), mc.getDesc()))
+			.withInstructionCoverage(mc.getInstructionCounter().getTotalCount(), mc.getInstructionCounter().getCoveredCount())
+			.withBranchCoverage(mc.getBranchCounter().getTotalCount(), mc.getBranchCounter().getCoveredCount())
+			.withComplexityCoverage(mc.getComplexityCounter().getTotalCount(), mc.getComplexityCounter().getCoveredCount());
 
 		for (int i = mc.getFirstLine(); i <= mc.getLastLine(); i++) {
 			ILine line = mc.getLine(i);
-			coverage.addLine(convertCoverage(line, i));
+			coverage.addLineCoverage(convertCoverage(line, i));
 		}
 		return coverage;
 	}
 
 	private LineCoverage convertCoverage(ILine line, int no) {
-		LineCoverage coverage = new LineCoverage(no);
-		coverage.setBranchCoverage(line.getBranchCounter().getTotalCount(), line.getBranchCounter().getCoveredCount());
-		coverage.setInstructionCoverage(line.getInstructionCounter().getTotalCount(), line.getInstructionCounter().getCoveredCount());
+		LineCoverage coverage = new LineCoverage(no)
+			.withBranchCoverage(line.getBranchCounter().getTotalCount(), line.getBranchCounter().getCoveredCount())
+			.withInstructionCoverage(line.getInstructionCounter().getTotalCount(), line.getInstructionCounter().getCoveredCount());
 		return coverage;
 	}
 
@@ -126,7 +126,7 @@ public class ComputeCoverage implements PropertyUpdate {
 		snapshot.streamSetupArgs().forEach(values::add);
 		snapshot.onExpectThis().ifPresent(values::add);
 		snapshot.streamExpectArgs().forEach(values::add);
-		
+
 		while (!values.isEmpty()) {
 			SerializedValue current = values.remove();
 			values.addAll(current.referencedValues());

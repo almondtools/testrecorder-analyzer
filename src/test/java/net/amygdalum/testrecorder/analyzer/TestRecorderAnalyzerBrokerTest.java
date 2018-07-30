@@ -22,7 +22,7 @@ public class TestRecorderAnalyzerBrokerTest {
 	private TestRecorderAnalyzerBroker broker;
 
 	@BeforeEach
-	public void before() throws Exception {
+	void before() throws Exception {
 		config = TestAgentConfiguration.defaultConfig();
 		broker = new TestRecorderAnalyzerBroker(config);
 	}

@@ -17,16 +17,18 @@ public class LineCoverage implements Serializable {
 		return line;
 	}
 
-	public void setInstructionCoverage(int total, int covered) {
+	public LineCoverage withInstructionCoverage(int total, int covered) {
 		instruction = new Counter(total, covered);
+		return this;
 	}
 	
 	public Counter getInstructionCoverage() {
 		return instruction;
 	}
 
-	public void setBranchCoverage(int total, int covered) {
+	public LineCoverage withBranchCoverage(int total, int covered) {
 		branch = new Counter(total, covered);
+		return this;
 	}
 	
 	public Counter getBranchCoverage() {

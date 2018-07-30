@@ -23,39 +23,43 @@ public class MethodCoverage implements Serializable {
 		return name;
 	}
 
-	public void setInstructionCoverage(int total, int covered) {
+	public MethodCoverage withInstructionCoverage(int total, int covered) {
 		instructions = new Counter(total, covered);
+		return this;
 	}
 
 	public Counter getInstructionCoverage() {
 		return instructions;
 	}
 
-	public void setBranchCoverage(int total, int covered) {
+	public MethodCoverage withBranchCoverage(int total, int covered) {
 		branches = new Counter(total, covered);
+		return this;
 	}
 	
 	public Counter getBranchCoverage() {
 		return branches;
 	}
 
-	public void setComplexityCoverage(int total, int covered) {
+	public MethodCoverage withComplexityCoverage(int total, int covered) {
 		complexity = new Counter(total, covered);
+		return this;
 	}
 	
 	public Counter getComplexityCoverage() {
 		return complexity;
 	}
 
-	public void addLine(LineCoverage coverage) {
+	public MethodCoverage addLineCoverage(LineCoverage coverage) {
 		lines.add(coverage);
+		return this;
 	}
 
 	public List<LineCoverage> getLines() {
 		return lines;
 	}
 
-	public Optional<LineCoverage> getLine(int lineNo) {
+	public Optional<LineCoverage> getLineCoverage(int lineNo) {
 		return lines.stream()
 			.filter(line -> line.getLine() == lineNo)
 			.findFirst();

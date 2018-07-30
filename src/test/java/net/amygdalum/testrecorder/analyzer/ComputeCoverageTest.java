@@ -99,17 +99,17 @@ public class ComputeCoverageTest {
 		Coverage oddCoverage = ComputeCoverage.COVERAGE.from(oddTest).orElseThrow(RuntimeException::new);
 
 		assertThat(evenCoverage).withFailMessage("instruction coverage should be different").isNotEqualTo(oddCoverage);
-		assertThat(oddCoverage.getMethod("isOdd(I)Z")).hasValueSatisfying(method -> {
+		assertThat(oddCoverage.getMethodCoverage("isOdd(I)Z")).hasValueSatisfying(method -> {
 			assertThat(method.getInstructionCoverage().ratio()).isCloseTo(7f/9f, within(0.001f));
 			assertThat(method.getBranchCoverage().ratio()).isCloseTo(1f/2f, within(0.001f));
-			assertThat(method.getLine(9)).hasValueSatisfying(line -> {
+			assertThat(method.getLineCoverage(9)).hasValueSatisfying(line -> {
 				assertThat(line.isCovered()).isTrue();
 			});
 		});
-		assertThat(evenCoverage.getMethod("isOdd(I)Z")).hasValueSatisfying(method -> {
+		assertThat(evenCoverage.getMethodCoverage("isOdd(I)Z")).hasValueSatisfying(method -> {
 			assertThat(method.getInstructionCoverage().ratio()).isCloseTo(7f/9f, within(0.001f));
 			assertThat(method.getBranchCoverage().ratio()).isCloseTo(1f/2f, within(0.001f));
-			assertThat(method.getLine(9)).hasValueSatisfying(line -> {
+			assertThat(method.getLineCoverage(9)).hasValueSatisfying(line -> {
 				assertThat(line.isCovered()).isFalse();
 			});
 		});
@@ -131,11 +131,11 @@ public class ComputeCoverageTest {
 		Coverage secondElementCoverage = ComputeCoverage.COVERAGE.from(secondElementTest).orElseThrow(RuntimeException::new);
 
 		assertThat(firstElementCoverage).withFailMessage("branch coverage should be different").isNotEqualTo(secondElementCoverage);
-		assertThat(firstElementCoverage.getMethod("isIn(Ljava/lang/Integer;)Z")).hasValueSatisfying(method -> {
+		assertThat(firstElementCoverage.getMethodCoverage("isIn(Ljava/lang/Integer;)Z")).hasValueSatisfying(method -> {
 			assertThat(method.getInstructionCoverage().ratio()).isCloseTo(18f/20f, within(0.001f));
 			assertThat(method.getBranchCoverage().ratio()).isCloseTo(2f/4f, within(0.001f));
 		});
-		assertThat(secondElementCoverage.getMethod("isIn(Ljava/lang/Integer;)Z")).hasValueSatisfying(method -> {
+		assertThat(secondElementCoverage.getMethodCoverage("isIn(Ljava/lang/Integer;)Z")).hasValueSatisfying(method -> {
 			assertThat(method.getInstructionCoverage().ratio()).isCloseTo(18f/20f, within(0.001f));
 			assertThat(method.getBranchCoverage().ratio()).isCloseTo(3f/4f, within(0.001f));
 		});
