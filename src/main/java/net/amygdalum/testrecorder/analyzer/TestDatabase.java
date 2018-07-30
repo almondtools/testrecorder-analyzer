@@ -5,43 +5,72 @@ import java.math.BigInteger;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NavigableSet;
 import java.util.UUID;
-import java.util.function.Predicate;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.stream.Collector;
 import java.util.stream.Stream;
 
+import org.h2.mvstore.Cursor;
 import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
 
 import net.amygdalum.testrecorder.ContextSnapshot;
-import net.amygdalum.testrecorder.analyzer.query.TestCaseQuery;
-import net.amygdalum.testrecorder.analyzer.query.TestCaseUpdate;
+import net.amygdalum.testrecorder.analyzer.request.TestCaseQuery;
+import net.amygdalum.testrecorder.analyzer.request.TestCaseUpdate;
 
 public class TestDatabase implements AutoCloseable {
 
 	private Serialization serialization;
 	private MVStore store;
 	private MVMap<String, Object[][]> tests;
+	private Map<Index<?>, MVMap<?, NavigableSet<String>>> indices;
 
 	public TestDatabase(TestrecorderAnalyzerConfig config, Serialization serialization) {
 		this.serialization = serialization;
 		this.store = MVStore.open(config.getDatabaseFile());
 		this.tests = store.openMap(config.getDatabaseCollection());
+		this.indices = new ConcurrentHashMap<>();
+	}
+
+	public void prepareIndexOn(Index<?> index) {
+		if (isPluggableType(index.type())) {
+			String key = index.name();
+			MVMap<String, NavigableSet<String>> map = store.openMap(key);
+			indices.put(index, map);
+		}
 	}
 
 	public String store(TestCase testCase) {
 		String id = testCase.getId();
-		tests.put(id, serialize(testCase));
+		store(id, testCase);
 		store.commit();
 		return id;
+	}
+
+	@SuppressWarnings("unchecked")
+	private void store(String id, TestCase testCase) {
+		tests.put(id, serialize(testCase));
+		indices.forEach((property, index) -> {
+			property.extract(testCase).ifPresent(indexValue -> {
+				MVMap<Object, NavigableSet<String>> erasedIndex = (MVMap<Object, NavigableSet<String>>) index;
+				Object erasedIndexValue = indexValue;
+				erasedIndex.computeIfAbsent(erasedIndexValue, v -> new ConcurrentSkipListSet<>())
+					.add(testCase.getId());
+			});
+		});
 	}
 
 	public TestCase load(String id) {
 		return deserialize(id, tests.get(id));
 	}
 
-	private boolean isPluggableType(Object value) {
-		Class<? extends Object> clazz = value.getClass();
+	public static boolean isPluggableType(Object value) {
+		return isPluggableType(value.getClass());
+	}
+
+	private static boolean isPluggableType(Class<?> clazz) {
 		if (clazz == Byte.class) {
 			return true;
 		} else if (clazz == Short.class) {
@@ -75,11 +104,13 @@ public class TestDatabase implements AutoCloseable {
 
 	public void update(TestCaseUpdate update) {
 		try {
-			Stream<TestCase> stream = tests.entrySet().stream()
-				.map(entry -> deserialize(entry.getKey(), entry.getValue()));
-			for (Predicate<TestCase> selector : update.selectors()) {
-				stream = stream.filter(selector);
-			}
+			PropertySelectors selectors = new PropertySelectors(update.selectors(), indices::containsKey);
+
+			Stream<TestCase> stream = selectors.dispatch(
+				this::selectByKey,
+				this::selectByRange,
+				this::selectAll);
+
 			stream.forEach(testCase -> {
 				boolean changed = false;
 				for (PropertyUpdate process : update.updates()) {
@@ -96,15 +127,47 @@ public class TestDatabase implements AutoCloseable {
 	}
 
 	public Stream<TestCase> fetch(TestCaseQuery query) {
-		Stream<TestCase> stream = tests.entrySet().stream()
-			.map(entry -> deserialize(entry.getKey(), entry.getValue()));
-		for (Predicate<TestCase> selector : query.selectors()) {
-			stream = stream.filter(selector);
-		}
+		PropertySelectors selectors = new PropertySelectors(query.selectors(), indices::containsKey);
+
+		Stream<TestCase> stream = selectors.dispatch(
+			this::selectByKey,
+			this::selectByRange,
+			this::selectAll);
+
 		for (Collector<TestCase, ?, Stream<TestCase>> collector : query.collectors()) {
 			stream = stream.collect(collector);
 		}
 		return stream;
+	}
+
+	@SuppressWarnings("unchecked")
+	private Stream<TestCase> selectByKey(PropertyKeySelector<?> selector) {
+		MVMap<Object, NavigableSet<String>> index = (MVMap<Object, NavigableSet<String>>) indices.get(selector.indexType());
+
+		NavigableSet<String> ids = index.get(selector.key());
+
+		return ids.stream()
+			.map(id -> deserialize(id, tests.get(id)));
+	}
+
+	@SuppressWarnings("unchecked")
+	private Stream<TestCase> selectByRange(PropertyRangeSelector<?> selector) {
+		MVMap<Object, NavigableSet<String>> index = (MVMap<Object, NavigableSet<String>>) indices.get(selector.indexType());
+		
+		NavigableSet<String> ids = new ConcurrentSkipListSet<>();
+		
+		Cursor<Object, NavigableSet<String>> cursor = index.cursor(selector.from());
+		while (cursor.hasNext() && !cursor.getKey().equals(selector.to())) {
+			ids.addAll(cursor.getValue());
+		}
+
+		return ids.stream()
+			.map(id -> deserialize(id, tests.get(id)));
+	}
+
+	private Stream<TestCase> selectAll() {
+		return tests.entrySet().stream()
+			.map(entry -> deserialize(entry.getKey(), entry.getValue()));
 	}
 
 	@Override
@@ -162,5 +225,4 @@ public class TestDatabase implements AutoCloseable {
 	private Object[] keyvalue(String key, Object value) {
 		return new Object[] { key, value };
 	}
-	
 }

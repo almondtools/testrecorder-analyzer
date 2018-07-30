@@ -6,18 +6,20 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import net.amygdalum.testrecorder.ContextSnapshot;
+import net.amygdalum.testrecorder.analyzer.testobjects.Bean;
+import net.amygdalum.testrecorder.analyzer.testobjects.FloatComparator;
+import net.amygdalum.testrecorder.analyzer.testobjects.GenericCycle;
+import net.amygdalum.testrecorder.analyzer.testobjects.In;
+import net.amygdalum.testrecorder.analyzer.testobjects.Inner;
+import net.amygdalum.testrecorder.analyzer.testobjects.InputOutput;
+import net.amygdalum.testrecorder.analyzer.testobjects.Odd;
+import net.amygdalum.testrecorder.analyzer.testobjects.Positive;
+import net.amygdalum.testrecorder.analyzer.testobjects.Static;
 import net.amygdalum.testrecorder.callsiterecorder.CallsiteRecorder;
 import net.amygdalum.testrecorder.profile.ConfigurableSerializationProfile;
 import net.amygdalum.testrecorder.profile.Fields;
 import net.amygdalum.testrecorder.profile.Methods;
 import net.amygdalum.testrecorder.profile.SerializationProfile;
-import net.amygdalum.testrecorder.util.testobjects.Bean;
-import net.amygdalum.testrecorder.util.testobjects.GenericCycle;
-import net.amygdalum.testrecorder.util.testobjects.In;
-import net.amygdalum.testrecorder.util.testobjects.Inner;
-import net.amygdalum.testrecorder.util.testobjects.InputOutput;
-import net.amygdalum.testrecorder.util.testobjects.Odd;
-import net.amygdalum.testrecorder.util.testobjects.Static;
 
 public class Snapshots {
 
@@ -47,6 +49,17 @@ public class Snapshots {
 		}
 	}
 
+	public static ContextSnapshot recordTest(Positive thisObject, Float argObject) throws Exception {
+		Class<?>[] argtypes = { Float.class };
+		try (CallsiteRecorder recorder = new CallsiteRecorder(Positive.class.getDeclaredMethod("test", argtypes))) {
+			CompletableFuture<List<ContextSnapshot>> recordings = recorder
+				.record(() -> {
+					thisObject.test(argObject);
+				});
+			return recordings.join().get(0);
+		}
+	}
+	
 	public static ContextSnapshot recordTest(In thisObject, Integer argObject) throws Exception {
 		Class<?>[] argtypes = { Integer.class };
 		try (CallsiteRecorder recorder = new CallsiteRecorder(In.class.getDeclaredMethod("test", argtypes))) {
@@ -119,7 +132,7 @@ public class Snapshots {
 	}
 
 	public static ContextSnapshot recordWriteUpperCase(InputOutput thisObject, String argObject) throws Exception {
-		Class<?>[] argtypes = {String.class};
+		Class<?>[] argtypes = { String.class };
 		SerializationProfile profile = ConfigurableSerializationProfile.builder()
 			.withOutputs(asList(Methods.byDescription(InputOutput.class.getDeclaredMethod("out", char.class))))
 			.build();
@@ -131,5 +144,16 @@ public class Snapshots {
 			return recordings.join().get(0);
 		}
 	}
-	
+
+	public static ContextSnapshot recordAreEqual(FloatComparator thisObject, Float arg1Object, Float arg2Object) throws Exception {
+		Class<?>[] argtypes = { float.class, float.class };
+		try (CallsiteRecorder recorder = new CallsiteRecorder(FloatComparator.class.getDeclaredMethod("areEqual", argtypes))) {
+			CompletableFuture<List<ContextSnapshot>> recordings = recorder
+				.record(() -> {
+					thisObject.areEqual(arg1Object, arg2Object);
+				});
+			return recordings.join().get(0);
+		}
+	}
+
 }

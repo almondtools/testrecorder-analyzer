@@ -30,7 +30,7 @@ public class Counter implements Serializable {
 	}
 
 	public boolean isUncovered() {
-		return total == 0;
+		return covered == 0;
 	}
 
 	@Override

@@ -10,7 +10,7 @@ import java.util.UUID;
 
 import net.amygdalum.testrecorder.ContextSnapshot;
 
-public class TestCase implements PropertyStore {
+public class TestCase implements SyntheticPropertyStore {
 
 	private String id; 
 	private ContextSnapshot snapshot;
@@ -39,13 +39,13 @@ public class TestCase implements PropertyStore {
 	}
 
 	@Override
-	public <T> Optional<T> get(Property<T> property) {
+	public <T> Optional<T> get(SyntheticProperty<T> property) {
 		String key = property.getKey();
 		return property.validate(properties.get(key));
 	}
 
 	@Override
-	public <T> boolean set(Property<T> property, T value) {
+	public <T> boolean set(SyntheticProperty<T> property, T value) {
 		String key = property.getKey();
 		
 		Object oldValue = properties.put(key, value);

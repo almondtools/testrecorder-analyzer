@@ -3,7 +3,7 @@ package net.amygdalum.testrecorder.analyzer;
 import static java.util.stream.Collectors.toList;
 import static net.amygdalum.extensions.assertj.iterables.IterableConditions.containingExactly;
 import static net.amygdalum.testrecorder.analyzer.Snapshots.recordInsert;
-import static net.amygdalum.testrecorder.analyzer.query.TestCaseQuery.query;
+import static net.amygdalum.testrecorder.analyzer.request.TestCaseQuery.query;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 import net.amygdalum.testrecorder.ContextSnapshot;
 import net.amygdalum.testrecorder.conditions.AContextSnapshot;
 import net.amygdalum.testrecorder.types.SerializedReferenceType;
-import net.amygdalum.testrecorder.util.testobjects.GenericCycle;
+import net.amygdalum.testrecorder.analyzer.testobjects.GenericCycle;
 
 public class TestRecorderAnalyzerBrokerTest {
 
