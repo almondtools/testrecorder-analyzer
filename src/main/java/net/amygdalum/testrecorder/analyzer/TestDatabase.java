@@ -145,6 +145,9 @@ public class TestDatabase implements AutoCloseable {
 		MVMap<Object, NavigableSet<String>> index = (MVMap<Object, NavigableSet<String>>) indices.get(selector.indexType());
 
 		NavigableSet<String> ids = index.get(selector.key());
+		if (ids == null) {
+			return Stream.empty();
+		}
 
 		return ids.stream()
 			.map(id -> deserialize(id, tests.get(id)));

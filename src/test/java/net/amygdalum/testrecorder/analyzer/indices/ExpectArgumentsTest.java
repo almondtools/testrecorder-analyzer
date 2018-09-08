@@ -27,7 +27,6 @@ import net.amygdalum.testrecorder.values.SerializedLiteral;
 public class ExpectArgumentsTest {
 
 	private static final ExpectArguments<Float> FLOAT_INDEX = expectArgumentAt(0).ofType(Float.class);
-
 	private static final ExpectArguments<Integer> INTEGER_INDEX = expectArgumentAt(0).ofType(Integer.class);
 
 	private static TestrecorderAnalyzerConfig config;
@@ -66,10 +65,7 @@ public class ExpectArgumentsTest {
 	private static TestDatabase setupDatabase(TestrecorderAnalyzerConfig config, Serialization serialization) throws Exception {
 		TestDatabase database = new TestDatabase(config, serialization);
 
-		database.store(new TestCase(recordTest(Odd.odd(), Integer.valueOf(2))));
-		database.store(new TestCase(recordTest(Odd.odd(), Integer.valueOf(3))));
-		database.store(new TestCase(recordTest(Positive.positive(), Float.valueOf(-2f))));
-		database.store(new TestCase(recordTest(Positive.positive(), Float.valueOf(0.3f))));
+		fillDatabase(database);
 
 		return database;
 	}
@@ -79,10 +75,7 @@ public class ExpectArgumentsTest {
 		database.prepareIndexOn(INTEGER_INDEX);
 		database.prepareIndexOn(FLOAT_INDEX);
 
-		database.store(new TestCase(recordTest(Odd.odd(), Integer.valueOf(2))));
-		database.store(new TestCase(recordTest(Odd.odd(), Integer.valueOf(3))));
-		database.store(new TestCase(recordTest(Positive.positive(), Float.valueOf(-2f))));
-		database.store(new TestCase(recordTest(Positive.positive(), Float.valueOf(0.3f))));
+		fillDatabase(database);
 
 		return database;
 	}
@@ -91,10 +84,7 @@ public class ExpectArgumentsTest {
 		TestDatabase database = new TestDatabase(config, serialization);
 		database.prepareIndexOn(INTEGER_INDEX);
 
-		database.store(new TestCase(recordTest(Odd.odd(), Integer.valueOf(2))));
-		database.store(new TestCase(recordTest(Odd.odd(), Integer.valueOf(3))));
-		database.store(new TestCase(recordTest(Positive.positive(), Float.valueOf(-2f))));
-		database.store(new TestCase(recordTest(Positive.positive(), Float.valueOf(0.3f))));
+		fillDatabase(database);
 
 		return database;
 	}
@@ -103,12 +93,16 @@ public class ExpectArgumentsTest {
 		TestDatabase database = new TestDatabase(config, serialization);
 		database.prepareIndexOn(FLOAT_INDEX);
 
+		fillDatabase(database);
+
+		return database;
+	}
+
+	private static void fillDatabase(TestDatabase database) throws Exception {
 		database.store(new TestCase(recordTest(Odd.odd(), Integer.valueOf(2))));
 		database.store(new TestCase(recordTest(Odd.odd(), Integer.valueOf(3))));
 		database.store(new TestCase(recordTest(Positive.positive(), Float.valueOf(-2f))));
 		database.store(new TestCase(recordTest(Positive.positive(), Float.valueOf(0.3f))));
-
-		return database;
 	}
 
 	@ProfiledTest
@@ -124,6 +118,14 @@ public class ExpectArgumentsTest {
 	}
 
 	@ProfiledTest
+	void testIntegerSelectionUnindexed(TestDatabase database) throws Exception {
+		List<TestCase> cases = database.fetch(query(new ExpectArgEquals<>(0, 4, INTEGER_INDEX)))
+			.collect(toList());
+
+		assertThat(cases).isEmpty();
+	}
+
+	@ProfiledTest
 	void testFloatSelection(TestDatabase database) throws Exception {
 		List<TestCase> cases = database.fetch(query(new ExpectArgEquals<>(0, 0.3f, FLOAT_INDEX)))
 			.collect(toList());
@@ -133,6 +135,14 @@ public class ExpectArgumentsTest {
 			.allSatisfy(testcase -> assertThat(SerializedValueWalker.start(testcase.getSnapshot().getExpectArgs(), 0)
 				.forLiteral(SerializedLiteral::getValue)
 				.orFail(e -> new RuntimeException(e))).isEqualTo(0.3f));
+	}
+
+	@ProfiledTest
+	void testFloatSelectionUnindexed(TestDatabase database) throws Exception {
+		List<TestCase> cases = database.fetch(query(new ExpectArgEquals<>(0, 0.4f, FLOAT_INDEX)))
+			.collect(toList());
+
+		assertThat(cases).isEmpty();
 	}
 
 }

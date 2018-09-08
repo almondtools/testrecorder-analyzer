@@ -1,33 +1,29 @@
 package net.amygdalum.testrecorder.analyzer.indices;
 
-import java.util.Optional;
-
 import net.amygdalum.testrecorder.analyzer.Index;
+import net.amygdalum.testrecorder.analyzer.MatchLiteralProperties;
 import net.amygdalum.testrecorder.analyzer.TestCase;
 import net.amygdalum.testrecorder.evaluator.SerializedValueEvaluator;
-import net.amygdalum.testrecorder.values.SerializedLiteral;
+import net.amygdalum.testrecorder.util.OptionalValue;
 
-public class ExpectThis<T> extends Index<T> {
+public class ExpectThis<T> extends Index<T> implements MatchLiteralProperties {
 
 	private SerializedValueEvaluator eval;
 	private String name;
 	private Class<T> type;
 
-	private ExpectThis() {
+	private ExpectThis(String expression, Class<T> type) {
+		this.type = type;
+		this.eval = new SerializedValueEvaluator(expression, type);
+		this.name = "expect.this" + expression;
 	}
 
-	public static ExpectThis<?> setupThisApplying(String expression) {
-		ExpectThis<?> setupArguments = new ExpectThis<>();
-		setupArguments.eval = new SerializedValueEvaluator(expression);
-		setupArguments.name = "setup.this." + expression;
-		return setupArguments;
+	public static ExpectThis<?> expectThisApplying(String expression) {
+		return new ExpectThis<>(expression, null);
 	}
 
-	@SuppressWarnings("unchecked")
-	public <S> ExpectThis<S> ofType(Class<S> type) {
-		ExpectThis<S> setupArguments = (ExpectThis<S>) this;
-		setupArguments.type = type;
-		return setupArguments;
+	public static <T> ExpectThis<T> expectThisApplying(String expression, Class<T> type) {
+		return new ExpectThis<>(expression, type);
 	}
 
 	@Override
@@ -41,13 +37,13 @@ public class ExpectThis<T> extends Index<T> {
 	}
 
 	@Override
-	public Optional<T> extract(TestCase testCase) {
-		return testCase.getSnapshot().onSetupThis()
-			.flatMap(eval::applyTo)
-			.filter(value -> value instanceof SerializedLiteral)
-			.map(value -> (SerializedLiteral) value)
-			.filter(value -> type.isAssignableFrom(value.getType()))
-			.map(value -> type.cast(value.getValue()));
+	public OptionalValue<T> extract(TestCase testCase) {
+		return OptionalValue.of(testCase.getSnapshot().onExpectThis()
+			.flatMap(eval::applyTo))
+			.filter(this::isLiteral)
+			.map(this::extractLiteral)
+			.filter(value -> value == null || type.isInstance(value))
+			.map(type::cast);
 	}
 
 }

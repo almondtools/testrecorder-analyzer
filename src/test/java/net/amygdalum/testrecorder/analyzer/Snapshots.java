@@ -1,6 +1,7 @@
 package net.amygdalum.testrecorder.analyzer;
 
 import static java.util.Arrays.asList;
+import net.amygdalum.testrecorder.analyzer.testobjects.IntCounter;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -103,6 +104,17 @@ public class Snapshots {
 		}
 	}
 
+	public static ContextSnapshot recordNext(IntCounter thisObject) throws Exception {
+		Class<?>[] argtypes = {  };
+		try (CallsiteRecorder recorder = new CallsiteRecorder(IntCounter.class.getDeclaredMethod("next", argtypes))) {
+			CompletableFuture<List<ContextSnapshot>> recordings = recorder
+				.record(() -> {
+					thisObject.next();
+				});
+			return recordings.join().get(0);
+		}
+	}
+	
 	public static ContextSnapshot recordGetAttribute(Bean thisObject) throws Exception {
 		Class<?>[] argtypes = {};
 		try (CallsiteRecorder recorder = new CallsiteRecorder(Bean.class.getDeclaredMethod("getAttribute", argtypes))) {

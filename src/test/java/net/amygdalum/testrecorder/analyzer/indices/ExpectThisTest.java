@@ -1,8 +1,9 @@
 package net.amygdalum.testrecorder.analyzer.indices;
 
 import static java.util.stream.Collectors.toList;
-import static net.amygdalum.testrecorder.analyzer.Snapshots.recordTest;
-import static net.amygdalum.testrecorder.analyzer.indices.SetupArguments.setupArgumentAt;
+import static net.amygdalum.testrecorder.analyzer.Snapshots.recordNext;
+import static net.amygdalum.testrecorder.analyzer.Snapshots.recordSetAttribute;
+import static net.amygdalum.testrecorder.analyzer.indices.ExpectThis.expectThisApplying;
 import static net.amygdalum.testrecorder.analyzer.request.TestCaseQuery.query;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -18,16 +19,16 @@ import net.amygdalum.testrecorder.analyzer.TestCase;
 import net.amygdalum.testrecorder.analyzer.TestDatabase;
 import net.amygdalum.testrecorder.analyzer.TestTestrecorderAnalyzerConfig;
 import net.amygdalum.testrecorder.analyzer.TestrecorderAnalyzerConfig;
-import net.amygdalum.testrecorder.analyzer.selectors.SetupArgEquals;
-import net.amygdalum.testrecorder.analyzer.testobjects.Odd;
-import net.amygdalum.testrecorder.analyzer.testobjects.Positive;
+import net.amygdalum.testrecorder.analyzer.selectors.ExpectThisEquals;
+import net.amygdalum.testrecorder.analyzer.testobjects.Bean;
+import net.amygdalum.testrecorder.analyzer.testobjects.IntCounter;
 import net.amygdalum.testrecorder.values.SerializedLiteral;
 
 @ExtendWith(MultipleProfiles.class)
-public class SetupArgumentsTest {
+public class ExpectThisTest {
 
-	private static final SetupArguments<Float> FLOAT_INDEX = setupArgumentAt(0).ofType(Float.class);
-	private static final SetupArguments<Integer> INTEGER_INDEX = setupArgumentAt(0).ofType(Integer.class);
+	private static final ExpectThis<String> STRING_INDEX = expectThisApplying(".attribute", String.class);
+	private static final ExpectThis<Integer> INTEGER_INDEX = expectThisApplying(".value", Integer.class);
 
 	private static TestrecorderAnalyzerConfig config;
 	private static Serialization serialization;
@@ -36,8 +37,8 @@ public class SetupArgumentsTest {
 	private static TestDatabase database;
 	@ProfileData(displayName = "with integer index")
 	private static TestDatabase databaseWithIntegerIndex;
-	@ProfileData(displayName = "with float index")
-	private static TestDatabase databaseWithFloatIndex;
+	@ProfileData(displayName = "with String index")
+	private static TestDatabase databaseWithStringIndex;
 	@ProfileData(displayName = "with multiple index")
 	private static TestDatabase databaseWithIndex;
 
@@ -48,7 +49,7 @@ public class SetupArgumentsTest {
 
 		database = setupDatabase(config, serialization);
 		databaseWithIntegerIndex = setupDatabaseWithIntegerIndex(config, serialization);
-		databaseWithFloatIndex = setupDatabaseWithFloatIndex(config, serialization);
+		databaseWithStringIndex = setupDatabaseWithStringIndex(config, serialization);
 		databaseWithIndex = setupDatabaseWithMultiIndex(config, serialization);
 	}
 
@@ -73,7 +74,7 @@ public class SetupArgumentsTest {
 	private static TestDatabase setupDatabaseWithMultiIndex(TestrecorderAnalyzerConfig config, Serialization serialization) throws Exception {
 		TestDatabase database = new TestDatabase(config, serialization);
 		database.prepareIndexOn(INTEGER_INDEX);
-		database.prepareIndexOn(FLOAT_INDEX);
+		database.prepareIndexOn(STRING_INDEX);
 
 		fillDatabase(database);
 
@@ -89,9 +90,9 @@ public class SetupArgumentsTest {
 		return database;
 	}
 
-	private static TestDatabase setupDatabaseWithFloatIndex(TestrecorderAnalyzerConfig config, Serialization serialization) throws Exception {
+	private static TestDatabase setupDatabaseWithStringIndex(TestrecorderAnalyzerConfig config, Serialization serialization) throws Exception {
 		TestDatabase database = new TestDatabase(config, serialization);
-		database.prepareIndexOn(FLOAT_INDEX);
+		database.prepareIndexOn(STRING_INDEX);
 
 		fillDatabase(database);
 
@@ -99,50 +100,52 @@ public class SetupArgumentsTest {
 	}
 
 	private static void fillDatabase(TestDatabase database) throws Exception {
-		database.store(new TestCase(recordTest(Odd.odd(), Integer.valueOf(2))));
-		database.store(new TestCase(recordTest(Odd.odd(), Integer.valueOf(3))));
-		database.store(new TestCase(recordTest(Positive.positive(), Float.valueOf(-2f))));
-		database.store(new TestCase(recordTest(Positive.positive(), Float.valueOf(0.3f))));
+		database.store(new TestCase(recordSetAttribute(new Bean(), "value1")));
+		database.store(new TestCase(recordSetAttribute(new Bean(), "value2")));
+		database.store(new TestCase(recordNext(new IntCounter())));
+		database.store(new TestCase(recordNext(new IntCounter(2))));
 	}
 
 	@ProfiledTest
-	void testIntegerSelection(TestDatabase database) throws Exception {
-		List<TestCase> cases = database.fetch(query(new SetupArgEquals<>(0, 2, INTEGER_INDEX)))
+	void testStringSelection(TestDatabase database) throws Exception {
+		List<TestCase> cases = database.fetch(query(new ExpectThisEquals<>(".attribute", "value1", STRING_INDEX)))
 			.collect(toList());
 
 		assertThat(cases)
 			.hasSize(1)
-			.allSatisfy(testcase -> assertThat(SerializedValueWalker.start(testcase.getSnapshot().getSetupArgs(), 0)
+			.allSatisfy(testcase -> assertThat(new SerializedValueWalker(testcase.getSnapshot().getExpectThis())
+				.field("attribute")
 				.forLiteral(SerializedLiteral::getValue)
-				.orFail(e -> new RuntimeException(e))).isEqualTo(2));
+				.orFail(e -> new RuntimeException(e))).isEqualTo("value1"));
+	}
+
+	@ProfiledTest
+	void testStringSelectionUnindexed(TestDatabase database) throws Exception {
+		List<TestCase> cases = database.fetch(query(new ExpectThisEquals<>(".attribute", "value3", STRING_INDEX)))
+			.collect(toList());
+		
+		assertThat(cases).isEmpty();
+	}
+	
+	@ProfiledTest
+	void testIntegerSelection(TestDatabase database) throws Exception {
+		List<TestCase> cases = database.fetch(query(new ExpectThisEquals<>(".value", 3, INTEGER_INDEX)))
+			.collect(toList());
+
+		assertThat(cases)
+			.hasSize(1)
+			.allSatisfy(testcase -> assertThat(new SerializedValueWalker(testcase.getSnapshot().getExpectThis())
+				.field("value")
+				.forLiteral(SerializedLiteral::getValue)
+				.orFail(e -> new RuntimeException(e))).isEqualTo(3));
 	}
 
 	@ProfiledTest
 	void testIntegerSelectionUnindexed(TestDatabase database) throws Exception {
-		List<TestCase> cases = database.fetch(query(new SetupArgEquals<>(0, 4, INTEGER_INDEX)))
+		List<TestCase> cases = database.fetch(query(new ExpectThisEquals<>(".value", 2, INTEGER_INDEX)))
 			.collect(toList());
-
+		
 		assertThat(cases).isEmpty();
 	}
-
-	@ProfiledTest
-	void testFloatSelection(TestDatabase database) throws Exception {
-		List<TestCase> cases = database.fetch(query(new SetupArgEquals<>(0, 0.3f, FLOAT_INDEX)))
-			.collect(toList());
-
-		assertThat(cases)
-			.hasSize(1)
-			.allSatisfy(testcase -> assertThat(SerializedValueWalker.start(testcase.getSnapshot().getSetupArgs(), 0)
-				.forLiteral(SerializedLiteral::getValue)
-				.orFail(e -> new RuntimeException(e))).isEqualTo(0.3f));
-	}
-
-	@ProfiledTest
-	void testFloatSelectionUnindexed(TestDatabase database) throws Exception {
-		List<TestCase> cases = database.fetch(query(new SetupArgEquals<>(0, 0.4f, FLOAT_INDEX)))
-			.collect(toList());
-
-		assertThat(cases).isEmpty();
-	}
-
+	
 }

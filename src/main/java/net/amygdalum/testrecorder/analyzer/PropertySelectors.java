@@ -19,7 +19,7 @@ public class PropertySelectors {
 		for (PropertySelector selector : selectors) {
 			if (keySelector == null && selector instanceof PropertyKeySelector<?> && isIndex.test(((PropertyKeySelector<?>) selector).indexType())) {
 				keySelector = (PropertyKeySelector<?>) selector;
-			} else if (rangeSelector == null && selector instanceof PropertyRangeSelector<?>&& isIndex.test(((PropertyRangeSelector<?>) selector).indexType())) {
+			} else if (rangeSelector == null && selector instanceof PropertyRangeSelector<?> && isIndex.test(((PropertyRangeSelector<?>) selector).indexType())) {
 				rangeSelector = (PropertyRangeSelector<?>) selector;
 			} else {
 				filterSelectors.add(selector);
@@ -27,7 +27,8 @@ public class PropertySelectors {
 		}
 	}
 
-	public Stream<TestCase> dispatch(Function<PropertyKeySelector<?>, Stream<TestCase>> onKeySelector, Function<PropertyRangeSelector<?>, Stream<TestCase>> onRangeSelector, Supplier<Stream<TestCase>> elseSelector) {
+	public Stream<TestCase> dispatch(Function<PropertyKeySelector<?>, Stream<TestCase>> onKeySelector, Function<PropertyRangeSelector<?>, Stream<TestCase>> onRangeSelector,
+		Supplier<Stream<TestCase>> elseSelector) {
 		Stream<TestCase> stream = bestPreselector(onKeySelector, onRangeSelector, elseSelector);
 		for (PropertySelector selector : filterSelectors) {
 			stream = stream.filter(testCase -> selector.apply(testCase));

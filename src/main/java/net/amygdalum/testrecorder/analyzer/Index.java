@@ -1,6 +1,6 @@
 package net.amygdalum.testrecorder.analyzer;
 
-import java.util.Optional;
+import net.amygdalum.testrecorder.util.OptionalValue;
 
 public abstract class Index<T> {
 
@@ -8,7 +8,7 @@ public abstract class Index<T> {
 
 	public abstract Class<?> type();
 
-	public abstract Optional<T> extract(TestCase testCase);
+	public abstract OptionalValue<T> extract(TestCase testCase);
 
 	@Override
 	public boolean equals(Object obj) {
