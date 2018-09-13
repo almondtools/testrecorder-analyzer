@@ -16,9 +16,9 @@ import org.h2.mvstore.Cursor;
 import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
 
-import net.amygdalum.testrecorder.ContextSnapshot;
 import net.amygdalum.testrecorder.analyzer.request.TestCaseQuery;
 import net.amygdalum.testrecorder.analyzer.request.TestCaseUpdate;
+import net.amygdalum.testrecorder.types.ContextSnapshot;
 
 public class TestDatabase implements AutoCloseable {
 

@@ -72,8 +72,8 @@ public class TestDatabaseEnhancedQueryTest {
 
 	private static ComputeSourceCode computeSourceCode() {
 		TestAgentConfiguration config = defaultConfig();
-		SetupGenerators setup = new SetupGenerators(new Adaptors<SetupGenerators>(config).load(SetupGenerator.class));
-		MatcherGenerators matcher = new MatcherGenerators(new Adaptors<MatcherGenerators>(config).load(MatcherGenerator.class));
+		SetupGenerators setup = new SetupGenerators(new Adaptors().load(config.loadConfigurations(SetupGenerator.class)));
+		MatcherGenerators matcher = new MatcherGenerators(new Adaptors().load(config.loadConfigurations(MatcherGenerator.class)));
 		List<TestRecorderAgentInitializer> initializers = config.loadConfigurations(TestRecorderAgentInitializer.class);
 		return new ComputeSourceCode(setup, matcher, initializers);
 	}

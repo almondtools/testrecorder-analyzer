@@ -1,8 +1,8 @@
 package net.amygdalum.testrecorder.analyzer;
 
-import net.amygdalum.testrecorder.ContextSnapshot;
 import net.amygdalum.testrecorder.SnapshotConsumer;
 import net.amygdalum.testrecorder.profile.AgentConfiguration;
+import net.amygdalum.testrecorder.types.ContextSnapshot;
 
 public class TestRecorderAnalyzerBroker implements SnapshotConsumer {
 

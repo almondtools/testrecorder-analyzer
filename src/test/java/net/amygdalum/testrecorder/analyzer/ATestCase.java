@@ -5,7 +5,7 @@ import org.assertj.core.description.Description;
 import org.assertj.core.description.TextDescription;
 
 import net.amygdalum.extensions.assertj.conditions.CompoundDescription;
-import net.amygdalum.testrecorder.ContextSnapshot;
+import net.amygdalum.testrecorder.types.ContextSnapshot;
 
 public class ATestCase extends Condition<TestCase> {
 

@@ -3,9 +3,9 @@ package net.amygdalum.testrecorder.analyzer.updates;
 
 import static net.amygdalum.testrecorder.analyzer.Snapshots.recordTest;
 import static net.amygdalum.testrecorder.analyzer.TestAgentConfiguration.defaultConfig;
-import static net.amygdalum.testrecorder.analyzer.testobjects.Odd.odd;
 import static net.amygdalum.testrecorder.analyzer.testobjects.In.in;
 import static net.amygdalum.testrecorder.analyzer.testobjects.Inner.negate;
+import static net.amygdalum.testrecorder.analyzer.testobjects.Odd.odd;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
@@ -13,7 +13,6 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import net.amygdalum.testrecorder.ContextSnapshot;
 import net.amygdalum.testrecorder.analyzer.PropertyUpdate;
 import net.amygdalum.testrecorder.analyzer.TestCase;
 import net.amygdalum.testrecorder.deserializers.Adaptors;
@@ -23,6 +22,7 @@ import net.amygdalum.testrecorder.deserializers.matcher.MatcherGenerator;
 import net.amygdalum.testrecorder.deserializers.matcher.MatcherGenerators;
 import net.amygdalum.testrecorder.profile.AgentConfiguration;
 import net.amygdalum.testrecorder.runtime.TestRecorderAgentInitializer;
+import net.amygdalum.testrecorder.types.ContextSnapshot;
 
 public class ComputeSourceCodeTest {
 
@@ -115,8 +115,8 @@ public class ComputeSourceCodeTest {
 	}
 
 	private PropertyUpdate source(AgentConfiguration config) {
-		SetupGenerators setup = new SetupGenerators(new Adaptors<SetupGenerators>(config).load(SetupGenerator.class));
-		MatcherGenerators matcher = new MatcherGenerators(new Adaptors<MatcherGenerators>(config).load(MatcherGenerator.class));
+		SetupGenerators setup = new SetupGenerators(new Adaptors().load(config.loadConfigurations(SetupGenerator.class)));
+		MatcherGenerators matcher = new MatcherGenerators(new Adaptors().load(config.loadConfigurations(MatcherGenerator.class)));
 		List<TestRecorderAgentInitializer> initializers = config.loadConfigurations(TestRecorderAgentInitializer.class);
 		return new ComputeSourceCode(setup, matcher, initializers);
 	}

@@ -2,9 +2,10 @@ package net.amygdalum.testrecorder.analyzer.selectors;
 
 import java.util.function.Predicate;
 
-import net.amygdalum.testrecorder.ContextSnapshot;
 import net.amygdalum.testrecorder.analyzer.PropertySelector;
 import net.amygdalum.testrecorder.analyzer.TestCase;
+import net.amygdalum.testrecorder.types.ContextSnapshot;
+import net.amygdalum.testrecorder.types.SerializedArgument;
 import net.amygdalum.testrecorder.types.SerializedValue;
 
 public class SetupArg implements PropertySelector {
@@ -24,6 +25,7 @@ public class SetupArg implements PropertySelector {
 			return false;
 		}
 		return snapshot.onSetupArg(index)
+			.map(SerializedArgument::getValue)
 			.map(constraint::test)
 			.orElse(false);
 	}

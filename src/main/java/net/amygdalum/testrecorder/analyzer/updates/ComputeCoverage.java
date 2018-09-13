@@ -20,18 +20,20 @@ import org.junit.runner.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import net.amygdalum.testrecorder.ContextSnapshot;
 import net.amygdalum.testrecorder.analyzer.Coverage;
 import net.amygdalum.testrecorder.analyzer.CoverageClassLoader;
 import net.amygdalum.testrecorder.analyzer.LineCoverage;
 import net.amygdalum.testrecorder.analyzer.MethodCoverage;
-import net.amygdalum.testrecorder.analyzer.SyntheticProperty;
 import net.amygdalum.testrecorder.analyzer.PropertyUpdate;
 import net.amygdalum.testrecorder.analyzer.SourceCode;
+import net.amygdalum.testrecorder.analyzer.SyntheticProperty;
 import net.amygdalum.testrecorder.analyzer.TaskFailedException;
 import net.amygdalum.testrecorder.analyzer.TestCase;
 import net.amygdalum.testrecorder.dynamiccompile.DynamicClassCompiler;
 import net.amygdalum.testrecorder.dynamiccompile.DynamicClassCompilerException;
+import net.amygdalum.testrecorder.types.ContextSnapshot;
+import net.amygdalum.testrecorder.types.SerializedArgument;
+import net.amygdalum.testrecorder.types.SerializedResult;
 import net.amygdalum.testrecorder.types.SerializedValue;
 import net.amygdalum.testrecorder.util.Instantiations;
 import net.amygdalum.testrecorder.util.WorkSet;
@@ -132,9 +134,10 @@ public class ComputeCoverage implements PropertyUpdate {
 	private Set<SerializedValue> collectValues(ContextSnapshot snapshot) {
 		WorkSet<SerializedValue> values = new WorkSet<>();
 		snapshot.onSetupThis().ifPresent(values::add);
-		snapshot.streamSetupArgs().forEach(values::add);
+		snapshot.streamSetupArgs().map(SerializedArgument::getValue).forEach(values::add);
 		snapshot.onExpectThis().ifPresent(values::add);
-		snapshot.streamExpectArgs().forEach(values::add);
+		snapshot.streamExpectArgs().map(SerializedArgument::getValue).forEach(values::add);
+		snapshot.onExpectResult().map(SerializedResult::getValue).ifPresent(values::add);
 
 		while (!values.isEmpty()) {
 			SerializedValue current = values.remove();

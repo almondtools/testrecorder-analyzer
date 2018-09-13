@@ -3,10 +3,10 @@ package net.amygdalum.testrecorder.analyzer.selectors;
 import java.util.Arrays;
 import java.util.function.BiFunction;
 
-import net.amygdalum.testrecorder.ContextSnapshot;
 import net.amygdalum.testrecorder.analyzer.PropertySelector;
 import net.amygdalum.testrecorder.analyzer.TestCase;
-import net.amygdalum.testrecorder.values.SerializedField;
+import net.amygdalum.testrecorder.types.ContextSnapshot;
+import net.amygdalum.testrecorder.types.SerializedField;
 
 public class OnGlobal implements PropertySelector {
 

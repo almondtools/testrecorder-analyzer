@@ -32,13 +32,13 @@ import net.amygdalum.testrecorder.analyzer.selectors.OnGlobal;
 import net.amygdalum.testrecorder.analyzer.selectors.SetupArg;
 import net.amygdalum.testrecorder.analyzer.selectors.SetupInput;
 import net.amygdalum.testrecorder.analyzer.selectors.SetupThis;
-import net.amygdalum.testrecorder.analyzer.testobjects.Odd;
-import net.amygdalum.testrecorder.types.SerializedValue;
 import net.amygdalum.testrecorder.analyzer.testobjects.Bean;
 import net.amygdalum.testrecorder.analyzer.testobjects.GenericCycle;
 import net.amygdalum.testrecorder.analyzer.testobjects.In;
 import net.amygdalum.testrecorder.analyzer.testobjects.InputOutput;
+import net.amygdalum.testrecorder.analyzer.testobjects.Odd;
 import net.amygdalum.testrecorder.analyzer.testobjects.Static;
+import net.amygdalum.testrecorder.types.SerializedValue;
 import net.amygdalum.testrecorder.values.SerializedLiteral;
 
 public class TestDatabaseQueryTest {

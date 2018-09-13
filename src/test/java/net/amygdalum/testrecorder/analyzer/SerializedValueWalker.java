@@ -10,10 +10,12 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import net.amygdalum.testrecorder.types.SerializedArgument;
+import net.amygdalum.testrecorder.types.SerializedField;
+import net.amygdalum.testrecorder.types.SerializedResult;
 import net.amygdalum.testrecorder.types.SerializedValue;
 import net.amygdalum.testrecorder.util.Exceptional;
 import net.amygdalum.testrecorder.values.SerializedArray;
-import net.amygdalum.testrecorder.values.SerializedField;
 import net.amygdalum.testrecorder.values.SerializedList;
 import net.amygdalum.testrecorder.values.SerializedLiteral;
 import net.amygdalum.testrecorder.values.SerializedMap;
@@ -33,12 +35,24 @@ public class SerializedValueWalker {
 	public SerializedValueWalker(SerializedValue current) {
 		this.current = current;
 	}
+	
+	public SerializedValueWalker(SerializedField current) {
+		this.current = current.getValue();
+	}
 
-	public static SerializedValueWalker start(SerializedValue[] array, int index) {
+	public SerializedValueWalker(SerializedArgument current) {
+		this.current = current.getValue();
+	}
+	
+	public SerializedValueWalker(SerializedResult current) {
+		this.current = current.getValue();
+	}
+	
+	public static SerializedValueWalker start(SerializedArgument[] array, int index) {
 		if (array == null || index >= array.length) {
 			return SerializedValueWalker.fail("no values to start from");
 		}
-		SerializedValue start = array[index];
+		SerializedArgument start = array[index];
 		if (start == null) {
 			return SerializedValueWalker.fail("null value to start from");
 		}
@@ -49,13 +63,9 @@ public class SerializedValueWalker {
 		if (array == null || index >= array.length) {
 			return SerializedValueWalker.fail("no fields to start from");
 		}
-		SerializedField startField = array[index];
-		if (startField == null) {
-			return SerializedValueWalker.fail("null field to start from");
-		}
-		SerializedValue start = startField.getValue();
+		SerializedField start = array[index];
 		if (start == null) {
-			return SerializedValueWalker.fail("null value to start from");
+			return SerializedValueWalker.fail("null field to start from");
 		}
 		return new SerializedValueWalker(start);
 	}

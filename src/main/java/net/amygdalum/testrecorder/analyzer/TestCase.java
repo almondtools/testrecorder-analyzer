@@ -8,7 +8,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
-import net.amygdalum.testrecorder.ContextSnapshot;
+import net.amygdalum.testrecorder.types.ContextSnapshot;
 
 public class TestCase implements SyntheticPropertyStore {
 

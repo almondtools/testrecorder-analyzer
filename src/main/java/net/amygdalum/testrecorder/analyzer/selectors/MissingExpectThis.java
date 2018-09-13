@@ -1,8 +1,8 @@
 package net.amygdalum.testrecorder.analyzer.selectors;
 
-import net.amygdalum.testrecorder.ContextSnapshot;
 import net.amygdalum.testrecorder.analyzer.PropertySelector;
 import net.amygdalum.testrecorder.analyzer.TestCase;
+import net.amygdalum.testrecorder.types.ContextSnapshot;
 
 public class MissingExpectThis implements PropertySelector {
 

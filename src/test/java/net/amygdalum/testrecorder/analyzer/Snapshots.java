@@ -1,18 +1,17 @@
 package net.amygdalum.testrecorder.analyzer;
 
 import static java.util.Arrays.asList;
-import net.amygdalum.testrecorder.analyzer.testobjects.IntCounter;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-import net.amygdalum.testrecorder.ContextSnapshot;
 import net.amygdalum.testrecorder.analyzer.testobjects.Bean;
 import net.amygdalum.testrecorder.analyzer.testobjects.FloatComparator;
 import net.amygdalum.testrecorder.analyzer.testobjects.GenericCycle;
 import net.amygdalum.testrecorder.analyzer.testobjects.In;
 import net.amygdalum.testrecorder.analyzer.testobjects.Inner;
 import net.amygdalum.testrecorder.analyzer.testobjects.InputOutput;
+import net.amygdalum.testrecorder.analyzer.testobjects.IntCounter;
 import net.amygdalum.testrecorder.analyzer.testobjects.Odd;
 import net.amygdalum.testrecorder.analyzer.testobjects.Positive;
 import net.amygdalum.testrecorder.analyzer.testobjects.Static;
@@ -21,6 +20,7 @@ import net.amygdalum.testrecorder.profile.ConfigurableSerializationProfile;
 import net.amygdalum.testrecorder.profile.Fields;
 import net.amygdalum.testrecorder.profile.Methods;
 import net.amygdalum.testrecorder.profile.SerializationProfile;
+import net.amygdalum.testrecorder.types.ContextSnapshot;
 
 public class Snapshots {
 

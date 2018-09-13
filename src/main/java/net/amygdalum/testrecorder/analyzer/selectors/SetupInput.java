@@ -3,10 +3,10 @@ package net.amygdalum.testrecorder.analyzer.selectors;
 import java.util.Queue;
 import java.util.function.Predicate;
 
-import net.amygdalum.testrecorder.ContextSnapshot;
 import net.amygdalum.testrecorder.analyzer.PropertySelector;
 import net.amygdalum.testrecorder.analyzer.TestCase;
-import net.amygdalum.testrecorder.values.SerializedInput;
+import net.amygdalum.testrecorder.types.ContextSnapshot;
+import net.amygdalum.testrecorder.types.SerializedInput;
 
 public class SetupInput implements PropertySelector {
 

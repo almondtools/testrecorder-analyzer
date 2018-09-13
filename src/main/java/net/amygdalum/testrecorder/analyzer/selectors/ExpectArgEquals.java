@@ -5,11 +5,12 @@ import static net.amygdalum.testrecorder.util.Types.boxedType;
 import java.lang.reflect.Type;
 import java.util.Objects;
 
-import net.amygdalum.testrecorder.ContextSnapshot;
 import net.amygdalum.testrecorder.analyzer.Index;
 import net.amygdalum.testrecorder.analyzer.MatchLiteralProperties;
 import net.amygdalum.testrecorder.analyzer.PropertyKeySelector;
 import net.amygdalum.testrecorder.analyzer.TestCase;
+import net.amygdalum.testrecorder.types.ContextSnapshot;
+import net.amygdalum.testrecorder.types.SerializedArgument;
 import net.amygdalum.testrecorder.util.OptionalValue;
 
 public class ExpectArgEquals<T> implements PropertyKeySelector<T>, MatchLiteralProperties {
@@ -31,6 +32,7 @@ public class ExpectArgEquals<T> implements PropertyKeySelector<T>, MatchLiteralP
 			return false;
 		}
 		return OptionalValue.of(snapshot.onExpectArg(argIndex))
+			.map(SerializedArgument::getValue)
 			.filter(this::isLiteral)
 			.map(this::extractLiteral)
 			.map(arg -> Objects.equals(arg, object))

@@ -11,10 +11,10 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import net.amygdalum.testrecorder.ContextSnapshot;
-import net.amygdalum.testrecorder.conditions.AContextSnapshot;
-import net.amygdalum.testrecorder.types.SerializedReferenceType;
 import net.amygdalum.testrecorder.analyzer.testobjects.GenericCycle;
+import net.amygdalum.testrecorder.conditions.AContextSnapshot;
+import net.amygdalum.testrecorder.types.ContextSnapshot;
+import net.amygdalum.testrecorder.types.SerializedReferenceType;
 
 public class TestRecorderAnalyzerBrokerTest {
 

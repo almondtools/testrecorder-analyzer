@@ -29,11 +29,11 @@ import net.amygdalum.testrecorder.analyzer.TestrecorderAnalyzerConfig;
 import net.amygdalum.testrecorder.analyzer.selectors.MissingSetupThis;
 import net.amygdalum.testrecorder.analyzer.selectors.PropertyMatching;
 import net.amygdalum.testrecorder.analyzer.selectors.SetupArgEquals;
-import net.amygdalum.testrecorder.analyzer.testobjects.Odd;
 import net.amygdalum.testrecorder.analyzer.testobjects.Bean;
 import net.amygdalum.testrecorder.analyzer.testobjects.GenericCycle;
 import net.amygdalum.testrecorder.analyzer.testobjects.In;
 import net.amygdalum.testrecorder.analyzer.testobjects.InputOutput;
+import net.amygdalum.testrecorder.analyzer.testobjects.Odd;
 import net.amygdalum.testrecorder.analyzer.testobjects.Static;
 
 public class TestDatabaseUpdateTest {
