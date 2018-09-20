@@ -16,10 +16,13 @@ import net.amygdalum.testrecorder.analyzer.Coverage;
 import net.amygdalum.testrecorder.analyzer.PropertyUpdates;
 import net.amygdalum.testrecorder.analyzer.TestCase;
 import net.amygdalum.testrecorder.deserializers.Adaptors;
+import net.amygdalum.testrecorder.deserializers.CustomAnnotation;
 import net.amygdalum.testrecorder.deserializers.builder.SetupGenerator;
 import net.amygdalum.testrecorder.deserializers.builder.SetupGenerators;
 import net.amygdalum.testrecorder.deserializers.matcher.MatcherGenerator;
 import net.amygdalum.testrecorder.deserializers.matcher.MatcherGenerators;
+import net.amygdalum.testrecorder.generator.DefaultTestGeneratorProfile;
+import net.amygdalum.testrecorder.generator.TestGeneratorProfile;
 import net.amygdalum.testrecorder.profile.AgentConfiguration;
 import net.amygdalum.testrecorder.runtime.TestRecorderAgentInitializer;
 import net.amygdalum.testrecorder.types.ContextSnapshot;
@@ -148,7 +151,8 @@ public class ComputeCoverageTest {
 		SetupGenerators setup = new SetupGenerators(new Adaptors().load(config.loadConfigurations(SetupGenerator.class)));
 		MatcherGenerators matcher = new MatcherGenerators(new Adaptors().load(config.loadConfigurations(MatcherGenerator.class)));
 		List<TestRecorderAgentInitializer> initializers = config.loadConfigurations(TestRecorderAgentInitializer.class);
-		return PropertyUpdates.inSequence(new ComputeSourceCode(setup, matcher, initializers), new ComputeCoverage()); 
+		List<CustomAnnotation> annotations = config.loadOptionalConfiguration(TestGeneratorProfile.class).orElseGet(DefaultTestGeneratorProfile::new).annotations();
+		return PropertyUpdates.inSequence(new ComputeSourceCode(setup, matcher, initializers, annotations), new ComputeCoverage()); 
 	}
 
 }

@@ -44,10 +44,13 @@ import net.amygdalum.testrecorder.analyzer.testobjects.Static;
 import net.amygdalum.testrecorder.analyzer.updates.ComputeCoverage;
 import net.amygdalum.testrecorder.analyzer.updates.ComputeSourceCode;
 import net.amygdalum.testrecorder.deserializers.Adaptors;
+import net.amygdalum.testrecorder.deserializers.CustomAnnotation;
 import net.amygdalum.testrecorder.deserializers.builder.SetupGenerator;
 import net.amygdalum.testrecorder.deserializers.builder.SetupGenerators;
 import net.amygdalum.testrecorder.deserializers.matcher.MatcherGenerator;
 import net.amygdalum.testrecorder.deserializers.matcher.MatcherGenerators;
+import net.amygdalum.testrecorder.generator.DefaultTestGeneratorProfile;
+import net.amygdalum.testrecorder.generator.TestGeneratorProfile;
 import net.amygdalum.testrecorder.runtime.TestRecorderAgentInitializer;
 
 public class TestDatabaseEnhancedQueryTest {
@@ -75,7 +78,8 @@ public class TestDatabaseEnhancedQueryTest {
 		SetupGenerators setup = new SetupGenerators(new Adaptors().load(config.loadConfigurations(SetupGenerator.class)));
 		MatcherGenerators matcher = new MatcherGenerators(new Adaptors().load(config.loadConfigurations(MatcherGenerator.class)));
 		List<TestRecorderAgentInitializer> initializers = config.loadConfigurations(TestRecorderAgentInitializer.class);
-		return new ComputeSourceCode(setup, matcher, initializers);
+		List<CustomAnnotation> annotations = config.loadOptionalConfiguration(TestGeneratorProfile.class).orElseGet(DefaultTestGeneratorProfile::new).annotations();
+		return new ComputeSourceCode(setup, matcher, initializers, annotations);
 	}
 
 	private static ComputeCoverage computeCoverage() {

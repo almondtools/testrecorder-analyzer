@@ -10,6 +10,7 @@ import net.amygdalum.testrecorder.analyzer.SourceCode;
 import net.amygdalum.testrecorder.analyzer.SyntheticProperty;
 import net.amygdalum.testrecorder.analyzer.TaskFailedException;
 import net.amygdalum.testrecorder.analyzer.TestCase;
+import net.amygdalum.testrecorder.deserializers.CustomAnnotation;
 import net.amygdalum.testrecorder.deserializers.builder.SetupGenerators;
 import net.amygdalum.testrecorder.deserializers.matcher.MatcherGenerators;
 import net.amygdalum.testrecorder.generator.ClassGenerator;
@@ -23,11 +24,13 @@ public class ComputeSourceCode implements PropertyUpdate {
 	private SetupGenerators setup;
 	private MatcherGenerators matcher;
 	private List<TestRecorderAgentInitializer> initializers;
+	private List<CustomAnnotation> annotations;
 
-	public ComputeSourceCode(SetupGenerators setup, MatcherGenerators matcher, List<TestRecorderAgentInitializer> initializers) {
+	public ComputeSourceCode(SetupGenerators setup, MatcherGenerators matcher, List<TestRecorderAgentInitializer> initializers, List<CustomAnnotation> annotations) {
 		this.setup = setup;
 		this.matcher = matcher;
 		this.initializers = initializers;
+		this.annotations = annotations;
 	}
 	
 	@Override
@@ -43,7 +46,7 @@ public class ComputeSourceCode implements PropertyUpdate {
 
 			String pkg = baseType.getPackage();
 			String name = baseType.getSimpleName();
-			ClassGenerator classGenerator = new ClassGenerator(setup, matcher, initializers, pkg, name + "Test");
+			ClassGenerator classGenerator = new ClassGenerator(setup, matcher, initializers, annotations, pkg, name + "Test");
 			classGenerator.generate(snapshot);
 			String sourceCode = classGenerator.render();
 
