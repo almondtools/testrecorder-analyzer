@@ -24,7 +24,6 @@ import net.amygdalum.testrecorder.deserializers.matcher.MatcherGenerators;
 import net.amygdalum.testrecorder.generator.DefaultTestGeneratorProfile;
 import net.amygdalum.testrecorder.generator.TestGeneratorProfile;
 import net.amygdalum.testrecorder.profile.AgentConfiguration;
-import net.amygdalum.testrecorder.runtime.TestRecorderAgentInitializer;
 import net.amygdalum.testrecorder.types.ContextSnapshot;
 
 public class ComputeCoverageTest {
@@ -150,9 +149,8 @@ public class ComputeCoverageTest {
 	private PropertyUpdates coverage(AgentConfiguration config) {
 		SetupGenerators setup = new SetupGenerators(new Adaptors().load(config.loadConfigurations(SetupGenerator.class)));
 		MatcherGenerators matcher = new MatcherGenerators(new Adaptors().load(config.loadConfigurations(MatcherGenerator.class)));
-		List<TestRecorderAgentInitializer> initializers = config.loadConfigurations(TestRecorderAgentInitializer.class);
 		List<CustomAnnotation> annotations = config.loadOptionalConfiguration(TestGeneratorProfile.class).orElseGet(DefaultTestGeneratorProfile::new).annotations();
-		return PropertyUpdates.inSequence(new ComputeSourceCode(setup, matcher, initializers, annotations), new ComputeCoverage()); 
+		return PropertyUpdates.inSequence(new ComputeSourceCode(setup, matcher, annotations), new ComputeCoverage()); 
 	}
 
 }

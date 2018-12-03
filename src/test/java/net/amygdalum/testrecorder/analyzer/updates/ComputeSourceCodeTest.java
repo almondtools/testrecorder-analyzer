@@ -24,7 +24,6 @@ import net.amygdalum.testrecorder.deserializers.matcher.MatcherGenerators;
 import net.amygdalum.testrecorder.generator.DefaultTestGeneratorProfile;
 import net.amygdalum.testrecorder.generator.TestGeneratorProfile;
 import net.amygdalum.testrecorder.profile.AgentConfiguration;
-import net.amygdalum.testrecorder.runtime.TestRecorderAgentInitializer;
 import net.amygdalum.testrecorder.types.ContextSnapshot;
 
 public class ComputeSourceCodeTest {
@@ -120,9 +119,8 @@ public class ComputeSourceCodeTest {
 	private PropertyUpdate source(AgentConfiguration config) {
 		SetupGenerators setup = new SetupGenerators(new Adaptors().load(config.loadConfigurations(SetupGenerator.class)));
 		MatcherGenerators matcher = new MatcherGenerators(new Adaptors().load(config.loadConfigurations(MatcherGenerator.class)));
-		List<TestRecorderAgentInitializer> initializers = config.loadConfigurations(TestRecorderAgentInitializer.class);
 		List<CustomAnnotation> annotations = config.loadOptionalConfiguration(TestGeneratorProfile.class).orElseGet(DefaultTestGeneratorProfile::new).annotations();
-		return new ComputeSourceCode(setup, matcher, initializers, annotations);
+		return new ComputeSourceCode(setup, matcher, annotations);
 	}
 
 }

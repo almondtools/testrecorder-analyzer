@@ -48,7 +48,7 @@
 		<dependency>
 			<groupId>net.amygdalum</groupId>
 			<artifactId>testrecorder-agent</artifactId>
-			<version>0.8.1</version>
+			<version>0.9.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>com.h2database</groupId>
@@ -84,14 +84,14 @@
 		<dependency>
 			<groupId>net.amygdalum</groupId>
 			<artifactId>testrecorder-runtime</artifactId>
-			<version>0.8.2-SNAPSHOT</version>
+			<version>0.9.1-SNAPSHOT</version>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>net.amygdalum</groupId>
 			<artifactId>testrecorder-agent</artifactId>
-			<version>0.8.2-SNAPSHOT</version>
+			<version>0.9.1-SNAPSHOT</version>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
@@ -128,7 +128,7 @@
 		<dependency>
 			<groupId>net.amygdalum</groupId>
 			<artifactId>assertj-extensions</artifactId>
-			<version>0.0.6-SNAPSHOT</version>
+			<version>0.0.6</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
