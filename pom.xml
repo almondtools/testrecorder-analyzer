@@ -84,14 +84,14 @@
 		<dependency>
 			<groupId>net.amygdalum</groupId>
 			<artifactId>testrecorder-runtime</artifactId>
-			<version>0.9.3-SNAPSHOT</version>
+			<version>0.10.0</version>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>net.amygdalum</groupId>
 			<artifactId>testrecorder-agent</artifactId>
-			<version>0.9.3-SNAPSHOT</version>
+			<version>0.10.0</version>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
