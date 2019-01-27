@@ -4,7 +4,6 @@ import static net.amygdalum.testrecorder.util.Types.baseType;
 
 import java.util.List;
 
-import net.amygdalum.testrecorder.ClassDescriptor;
 import net.amygdalum.testrecorder.analyzer.PropertyUpdate;
 import net.amygdalum.testrecorder.analyzer.SourceCode;
 import net.amygdalum.testrecorder.analyzer.SyntheticProperty;
@@ -14,7 +13,10 @@ import net.amygdalum.testrecorder.deserializers.CustomAnnotation;
 import net.amygdalum.testrecorder.deserializers.builder.SetupGenerators;
 import net.amygdalum.testrecorder.deserializers.matcher.MatcherGenerators;
 import net.amygdalum.testrecorder.generator.ClassGenerator;
+import net.amygdalum.testrecorder.generator.JUnit4TestTemplate;
+import net.amygdalum.testrecorder.generator.TestTemplate;
 import net.amygdalum.testrecorder.types.ContextSnapshot;
+import net.amygdalum.testrecorder.util.ClassDescriptor;
 
 public class ComputeSourceCode implements PropertyUpdate {
 
@@ -43,7 +45,8 @@ public class ComputeSourceCode implements PropertyUpdate {
 
 			String pkg = baseType.getPackage();
 			String name = baseType.getSimpleName();
-			ClassGenerator classGenerator = new ClassGenerator(setup, matcher, annotations, pkg, name + "Test");
+			TestTemplate template = new JUnit4TestTemplate();
+			ClassGenerator classGenerator = new ClassGenerator(setup, matcher, template, annotations, pkg, name + "Test");
 			classGenerator.generate(snapshot);
 			String sourceCode = classGenerator.render();
 
