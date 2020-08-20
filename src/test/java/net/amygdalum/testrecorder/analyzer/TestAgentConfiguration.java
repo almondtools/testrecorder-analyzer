@@ -11,10 +11,10 @@ import java.util.stream.Stream;
 
 import net.amygdalum.testrecorder.DefaultPerformanceProfile;
 import net.amygdalum.testrecorder.DefaultSerializationProfile;
-import net.amygdalum.testrecorder.profile.AgentConfiguration;
 import net.amygdalum.testrecorder.profile.ClassPathConfigurationLoader;
 import net.amygdalum.testrecorder.profile.DefaultPathConfigurationLoader;
 import net.amygdalum.testrecorder.profile.PerformanceProfile;
+import net.amygdalum.testrecorder.profile.AgentConfiguration;
 import net.amygdalum.testrecorder.profile.SerializationProfile;
 
 public class TestAgentConfiguration extends AgentConfiguration {
@@ -29,10 +29,6 @@ public class TestAgentConfiguration extends AgentConfiguration {
 	public TestAgentConfiguration(ClassLoader loader) {
 		super(new ClassPathConfigurationLoader(loader), new DefaultPathConfigurationLoader(loader));
 		configs = new HashMap<>();
-	}
-
-	public TestAgentConfiguration reset() {
-		return (TestAgentConfiguration) super.reset();
 	}
 
 	public TestAgentConfiguration withLoader(ClassLoader loader) {

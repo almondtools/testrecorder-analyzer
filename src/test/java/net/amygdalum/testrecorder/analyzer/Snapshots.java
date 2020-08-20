@@ -25,12 +25,12 @@ import net.amygdalum.testrecorder.types.ContextSnapshot;
 public class Snapshots {
 
 	public static ContextSnapshot recordSetGlobal(Class<Static> thisObject, String argObject) throws Exception {
-		Class<?>[] argtypes = { String.class };
+		Class<?>[] argtypes = {String.class};
 		SerializationProfile profile = ConfigurableSerializationProfile.builder()
 			.withGlobalFields(asList(Fields.byDescription(Static.class.getDeclaredField("global"))))
 			.build();
 		Static.global = null;
-		try (CallsiteRecorder recorder = new CallsiteRecorder(profile, Static.class.getDeclaredMethod("setGlobal", argtypes))) {
+		try (CallsiteRecorder recorder = CallsiteRecorder.create(profile, Static.class.getDeclaredMethod("setGlobal", argtypes))) {
 			CompletableFuture<List<ContextSnapshot>> recordings = recorder
 				.record(() -> {
 					Static.setGlobal(argObject);
@@ -40,8 +40,8 @@ public class Snapshots {
 	}
 
 	public static ContextSnapshot recordTest(Odd thisObject, Integer argObject) throws Exception {
-		Class<?>[] argtypes = { Integer.class };
-		try (CallsiteRecorder recorder = new CallsiteRecorder(Odd.class.getDeclaredMethod("test", argtypes))) {
+		Class<?>[] argtypes = {Integer.class};
+		try (CallsiteRecorder recorder = CallsiteRecorder.create(Odd.class.getDeclaredMethod("test", argtypes))) {
 			CompletableFuture<List<ContextSnapshot>> recordings = recorder
 				.record(() -> {
 					thisObject.test(argObject);
@@ -51,8 +51,8 @@ public class Snapshots {
 	}
 
 	public static ContextSnapshot recordTest(Positive thisObject, Float argObject) throws Exception {
-		Class<?>[] argtypes = { Float.class };
-		try (CallsiteRecorder recorder = new CallsiteRecorder(Positive.class.getDeclaredMethod("test", argtypes))) {
+		Class<?>[] argtypes = {Float.class};
+		try (CallsiteRecorder recorder = CallsiteRecorder.create(Positive.class.getDeclaredMethod("test", argtypes))) {
 			CompletableFuture<List<ContextSnapshot>> recordings = recorder
 				.record(() -> {
 					thisObject.test(argObject);
@@ -60,10 +60,10 @@ public class Snapshots {
 			return recordings.join().get(0);
 		}
 	}
-	
+
 	public static ContextSnapshot recordTest(In thisObject, Integer argObject) throws Exception {
-		Class<?>[] argtypes = { Integer.class };
-		try (CallsiteRecorder recorder = new CallsiteRecorder(In.class.getDeclaredMethod("test", argtypes))) {
+		Class<?>[] argtypes = {Integer.class};
+		try (CallsiteRecorder recorder = CallsiteRecorder.create(In.class.getDeclaredMethod("test", argtypes))) {
 			CompletableFuture<List<ContextSnapshot>> recordings = recorder
 				.record(() -> {
 					thisObject.test(argObject);
@@ -73,8 +73,8 @@ public class Snapshots {
 	}
 
 	public static ContextSnapshot recordTest(Inner.Negate thisObject, Boolean argObject) throws Exception {
-		Class<?>[] argtypes = { Boolean.class };
-		try (CallsiteRecorder recorder = new CallsiteRecorder(Inner.Negate.class.getDeclaredMethod("test", argtypes))) {
+		Class<?>[] argtypes = {Boolean.class};
+		try (CallsiteRecorder recorder = CallsiteRecorder.create(Inner.Negate.class.getDeclaredMethod("test", argtypes))) {
 			CompletableFuture<List<ContextSnapshot>> recordings = recorder
 				.record(() -> {
 					thisObject.test(argObject);
@@ -84,7 +84,7 @@ public class Snapshots {
 	}
 
 	public static ContextSnapshot recordInsert(GenericCycle<String> thisObject, GenericCycle<String> argObject) throws Exception {
-		try (CallsiteRecorder recorder = new CallsiteRecorder(GenericCycle.class.getDeclaredMethod("insert", GenericCycle.class))) {
+		try (CallsiteRecorder recorder = CallsiteRecorder.create(GenericCycle.class.getDeclaredMethod("insert", GenericCycle.class))) {
 			CompletableFuture<List<ContextSnapshot>> recordings = recorder
 				.record(() -> {
 					thisObject.insert(argObject);
@@ -94,8 +94,8 @@ public class Snapshots {
 	}
 
 	public static ContextSnapshot recordSetAttribute(Bean thisObject, String argObject) throws Exception {
-		Class<?>[] argtypes = { String.class };
-		try (CallsiteRecorder recorder = new CallsiteRecorder(Bean.class.getDeclaredMethod("setAttribute", argtypes))) {
+		Class<?>[] argtypes = {String.class};
+		try (CallsiteRecorder recorder = CallsiteRecorder.create(Bean.class.getDeclaredMethod("setAttribute", argtypes))) {
 			CompletableFuture<List<ContextSnapshot>> recordings = recorder
 				.record(() -> {
 					thisObject.setAttribute(argObject);
@@ -105,8 +105,8 @@ public class Snapshots {
 	}
 
 	public static ContextSnapshot recordNext(IntCounter thisObject) throws Exception {
-		Class<?>[] argtypes = {  };
-		try (CallsiteRecorder recorder = new CallsiteRecorder(IntCounter.class.getDeclaredMethod("next", argtypes))) {
+		Class<?>[] argtypes = {};
+		try (CallsiteRecorder recorder = CallsiteRecorder.create(IntCounter.class.getDeclaredMethod("next", argtypes))) {
 			CompletableFuture<List<ContextSnapshot>> recordings = recorder
 				.record(() -> {
 					thisObject.next();
@@ -114,10 +114,10 @@ public class Snapshots {
 			return recordings.join().get(0);
 		}
 	}
-	
+
 	public static ContextSnapshot recordGetAttribute(Bean thisObject) throws Exception {
 		Class<?>[] argtypes = {};
-		try (CallsiteRecorder recorder = new CallsiteRecorder(Bean.class.getDeclaredMethod("getAttribute", argtypes))) {
+		try (CallsiteRecorder recorder = CallsiteRecorder.create(Bean.class.getDeclaredMethod("getAttribute", argtypes))) {
 			CompletableFuture<List<ContextSnapshot>> recordings = recorder
 				.record(() -> {
 					thisObject.getAttribute();
@@ -134,7 +134,7 @@ public class Snapshots {
 		inObject.chars()
 			.mapToObj(i -> Character.valueOf((char) i))
 			.forEach(InputOutput.IN::add);
-		try (CallsiteRecorder recorder = new CallsiteRecorder(profile, InputOutput.class.getDeclaredMethod("readLowerCase", argtypes))) {
+		try (CallsiteRecorder recorder = CallsiteRecorder.create(profile, InputOutput.class.getDeclaredMethod("readLowerCase", argtypes))) {
 			CompletableFuture<List<ContextSnapshot>> recordings = recorder
 				.record(() -> {
 					thisObject.readLowerCase();
@@ -144,11 +144,11 @@ public class Snapshots {
 	}
 
 	public static ContextSnapshot recordWriteUpperCase(InputOutput thisObject, String argObject) throws Exception {
-		Class<?>[] argtypes = { String.class };
+		Class<?>[] argtypes = {String.class};
 		SerializationProfile profile = ConfigurableSerializationProfile.builder()
 			.withOutputs(asList(Methods.byDescription(InputOutput.class.getDeclaredMethod("out", char.class))))
 			.build();
-		try (CallsiteRecorder recorder = new CallsiteRecorder(profile, InputOutput.class.getDeclaredMethod("writeUpperCase", argtypes))) {
+		try (CallsiteRecorder recorder = CallsiteRecorder.create(profile, InputOutput.class.getDeclaredMethod("writeUpperCase", argtypes))) {
 			CompletableFuture<List<ContextSnapshot>> recordings = recorder
 				.record(() -> {
 					thisObject.writeUpperCase(argObject);
@@ -158,8 +158,8 @@ public class Snapshots {
 	}
 
 	public static ContextSnapshot recordAreEqual(FloatComparator thisObject, Float arg1Object, Float arg2Object) throws Exception {
-		Class<?>[] argtypes = { float.class, float.class };
-		try (CallsiteRecorder recorder = new CallsiteRecorder(FloatComparator.class.getDeclaredMethod("areEqual", argtypes))) {
+		Class<?>[] argtypes = {float.class, float.class};
+		try (CallsiteRecorder recorder = CallsiteRecorder.create(FloatComparator.class.getDeclaredMethod("areEqual", argtypes))) {
 			CompletableFuture<List<ContextSnapshot>> recordings = recorder
 				.record(() -> {
 					thisObject.areEqual(arg1Object, arg2Object);

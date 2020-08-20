@@ -48,82 +48,82 @@
 		<dependency>
 			<groupId>net.amygdalum</groupId>
 			<artifactId>testrecorder-agent</artifactId>
-			<version>0.10.1</version>
+            <version>0.10.3</version>
 		</dependency>
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2-mvstore</artifactId>
-			<version>1.4.186</version>
+			<version>1.4.200</version>
 		</dependency>
 		<dependency>
 			<groupId>de.ruedigermoeller</groupId>
 			<artifactId>fst</artifactId>
-			<version>2.56</version>
+			<version>3.0.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.jacoco</groupId>
 			<artifactId>org.jacoco.core</artifactId>
-			<version>0.8.4</version>
+			<version>0.8.5</version>
 		</dependency>
 		<dependency>
 			<groupId>org.jacoco</groupId>
 			<artifactId>org.jacoco.report</artifactId>
-			<version>0.8.4</version>
+			<version>0.8.5</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>1.7.26</version>
+			<version>1.7.30</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-jdk14</artifactId>
-			<version>1.7.26</version>
+			<version>1.7.30</version>
 		</dependency>
 
 		<dependency>
 			<groupId>net.amygdalum</groupId>
 			<artifactId>testrecorder-runtime</artifactId>
-			<version>0.10.1</version>
+            <version>0.10.3</version>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>net.amygdalum</groupId>
 			<artifactId>testrecorder-agent</artifactId>
-			<version>0.10.1</version>
+            <version>0.10.3</version>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-api</artifactId>
-			<version>5.4.2</version>
+			<version>5.7.0-RC1</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-params</artifactId>
-			<version>5.4.2</version>
+			<version>5.7.0-RC1</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.junit.platform</groupId>
 			<artifactId>junit-platform-launcher</artifactId>
-			<version>1.4.2</version>
+			<version>1.7.0-RC1</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-engine</artifactId>
-			<version>5.4.2</version>
+			<version>5.7.0-RC1</version>
 			<scope>test</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>org.assertj</groupId>
 			<artifactId>assertj-core</artifactId>
-			<version>3.12.2</version>
+			<version>3.16.1</version>
 		</dependency>
 		<dependency>
 			<groupId>net.amygdalum</groupId>
@@ -133,7 +133,7 @@
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-core</artifactId>
-			<version>2.28.2</version>
+			<version>3.5.2</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
